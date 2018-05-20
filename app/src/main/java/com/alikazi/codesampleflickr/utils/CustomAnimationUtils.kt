@@ -11,7 +11,7 @@ import com.alikazi.codesampleflickr.constants.AppConstants
 /**
  * Created by kazi_ on 15-Apr-18.
  */
-class AnimationUtils {
+class CustomAnimationUtils {
 
     companion object {
         fun animateToolbar(context: Context, toolbar: Toolbar?, listener: ToolbarAnimationListener?) {
