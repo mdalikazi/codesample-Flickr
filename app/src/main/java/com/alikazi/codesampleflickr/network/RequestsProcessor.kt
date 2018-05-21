@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.constants.NetworkConstants
+import com.alikazi.codesampleflickr.models.Items
 import com.alikazi.codesampleflickr.utils.DLog
 import com.android.volley.Request
 import com.android.volley.Response
@@ -41,8 +42,8 @@ class RequestsProcessor(context: Context, requestResponseListener: RequestRespon
                     Request.Method.GET, url, null,
                     Response.Listener { response ->
                         val gson = Gson()
-//                        val properties: Properties = gson.fromJson(response.toString(), Properties::class.java)
-//                        mRequestResponseListener.responseOk(properties)
+                        val items: Items = gson.fromJson(response.toString(), Items::class.java)
+                        mRequestResponseListener.responseOk(items)
                     },
                     Response.ErrorListener { error ->
                         mRequestResponseListener.responseError(error)
@@ -58,7 +59,7 @@ class RequestsProcessor(context: Context, requestResponseListener: RequestRespon
     }
 
     interface RequestResponseListener {
-//        fun responseOk(properties: Properties)
+        fun responseOk(items: Items)
 
         fun responseError(error: VolleyError)
     }

@@ -61,7 +61,7 @@ class CustomAnimationUtils {
             }
         }
 
-        private fun getDefaultActionBarHeightInPixels(context: Context): Float {
+        fun getDefaultActionBarHeightInPixels(context: Context): Float {
             DLog.i(AppConstants.LOG_TAG_MAIN, "getDefaultActionBarHeightInPixels")
             val typedValue = TypedValue()
             val canGetValue = context.theme.resolveAttribute(android.R.attr.actionBarSize, typedValue, true)
@@ -71,7 +71,7 @@ class CustomAnimationUtils {
         }
 
         fun animateList(view: View, listener: ListAnimationListener?) {
-            val translateAnimation = TranslateAnimation(0f, 0f, 500f, 0f)
+            val translateAnimation = TranslateAnimation(500f, 0f, 0f, 0f)
             translateAnimation.interpolator = DecelerateInterpolator()
             translateAnimation.duration = DURATION_LONG
             translateAnimation.setAnimationListener(object : Animation.AnimationListener {

@@ -70,7 +70,7 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
         }
         val adapterPosition = holder.adapterPosition
         val image: ImageItem? = mListItems?.get(adapterPosition)
-        holder.itemView.setOnClickListener({ mItemClickListener.onPropertyItemClick(image)})
+        holder.itemView.setOnClickListener({ mItemClickListener.onRecyclerItemClick(image)})
 
         when (holder.itemViewType) {
             VIEW_TYPE_ITEM -> {
@@ -78,7 +78,10 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
                 Glide.with(mContext)
                         .load(image?.media?.m)
                         .transition(DrawableTransitionOptions().crossFade())
-                        .apply(RequestOptions().encodeQuality(100).diskCacheStrategy(DiskCacheStrategy.ALL))
+                        .apply(RequestOptions()
+                                .encodeQuality(100)
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                .placeholder(R.drawable.ic_placeholder_photo))
                         .listener(object : RequestListener<Drawable> {
                             override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
                                 viewHolder.progressBar.visibility = View.GONE
@@ -111,7 +114,7 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
     }
 
     interface RecyclerItemClickListener {
-        fun onPropertyItemClick(image: ImageItem?)
+        fun onRecyclerItemClick(image: ImageItem?)
     }
 
 }

@@ -25,14 +25,29 @@
             android:layout_height="1dp"
             android:background="@color/colorIconInactive"/>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/main_recycler_view"
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:showDividers="middle"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_recycler_view"/>
+            android:minHeight="100dp">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/main_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:showDividers="middle"
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_recycler_view"/>
+
+            <TextView
+                android:id="@+id/recycler_view_empty_text_view"
+                style="@style/EmptyMessageStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="@string/feed_empty_list_message"
+                tools:visibility="visible"/>
+
+        </RelativeLayout>
 
     </LinearLayout>
 
