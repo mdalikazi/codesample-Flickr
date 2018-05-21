@@ -13,13 +13,11 @@ import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.utils.DLog
 import kotlinx.android.synthetic.main.content_detail.view.*
 
-class DetailsFragment : Fragment() {
+class DetailsFragment : Fragment(),
+        RecyclerAdapter.RecyclerItemClickListener {
 
     companion object {
-        const val LOG_TAG = AppConstants.LOG_TAG_MAIN
-
-        const val INTENT_EXTRA_IMAGE_ITEM = "INTENT_EXTRA_IMAGE_ITEM"
-        const val INTENT_EXTRA_IMAGES = "INTENT_EXTRA_IMAGES"
+        private const val LOG_TAG = AppConstants.LOG_TAG_MAIN
     }
 
     fun setImageChangeListener(listener: OnViewPagerImageChangeListener) {
@@ -29,25 +27,8 @@ class DetailsFragment : Fragment() {
     private var mSelectedPosition = 0
     private var mViewPager: ViewPager? = null
     private var mEmptyTextView: TextView? = null
-    private var mImage: ImageItem? = null
     private var mImages: ArrayList<ImageItem>? = ArrayList()
     private var mImageChangeListener: OnViewPagerImageChangeListener? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        DLog.i(LOG_TAG, "onCreate")
-        /*arguments?.let {
-            if (it.containsKey(INTENT_EXTRA_IMAGE_ITEM)) {
-                mImage = it.getParcelable(INTENT_EXTRA_IMAGE_ITEM)
-                DLog.d(LOG_TAG, "mImage != null")
-                DLog.d(LOG_TAG, "mImage?.title: " + mImage?.title)
-            }
-            if (it.containsKey(INTENT_EXTRA_IMAGES)) {
-                mImages = it.getParcelableArrayList(INTENT_EXTRA_IMAGES)
-                DLog.d(LOG_TAG, "mImages != null ${mImages?.size}")
-            }
-        }*/
-    }
 
     fun setPagerItems(images: ArrayList<ImageItem>?) {
         mImages = images
@@ -62,24 +43,6 @@ class DetailsFragment : Fragment() {
         val view = inflater.inflate(R.layout.content_detail, container, false)
         mViewPager = view.view_pager
         mEmptyTextView = view.view_pager_empty_text_view
-//        setupViewPager(view)
-        /*Glide.with(activity!!)
-                .load(mImage?.media?.m)
-                .transition(DrawableTransitionOptions().crossFade())
-                .apply(RequestOptions().encodeQuality(100).diskCacheStrategy(DiskCacheStrategy.ALL))
-                .listener(object : RequestListener<Drawable> {
-                    override fun onLoadFailed(e: GlideException?, model: Any?, target: com.bumptech.glide.request.target.Target<Drawable>?, isFirstResource: Boolean): Boolean {
-//                        view.progressBar.visibility = View.GONE
-                        view.view_pager_empty_text_view.visibility = View.VISIBLE
-                        return false
-                    }
-
-                    override fun onResourceReady(resource: Drawable?, model: Any?, target: com.bumptech.glide.request.target.Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-//                        viewHolder.progressBar.visibility = View.GONE
-                        return false
-                    }
-                })
-                .into(view.test_image_view)*/
         return view
     }
 
@@ -103,6 +66,13 @@ class DetailsFragment : Fragment() {
             }
         })
         mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
+    }
+
+    override fun onRecyclerItemClick(position: Int, image: ImageItem?) {
+        DLog.i(LOG_TAG, "onRecyclerItemClick")
+        DLog.i(LOG_TAG, "item?.title " + image?.title)
+        mViewPager?.setCurrentItem(position, true)
+
     }
 
     interface OnViewPagerImageChangeListener {

@@ -22,17 +22,13 @@ import kotlinx.android.synthetic.main.toolbar.*
 class MainActivity : AppCompatActivity(),
         CustomAnimationUtils.ToolbarAnimationListener,
         RequestsProcessor.RequestResponseListener,
-        RecyclerAdapter.RecyclerItemClickListener,
         DetailsFragment.OnViewPagerImageChangeListener {
 
     companion object {
-
         private const val LOG_TAG = AppConstants.LOG_TAG_MAIN
-
         private const val SAVE_INSTANCE_KEY_FEED = "SAVE_INSTANCE_KEY_FEED"
     }
 
-    private var mIsTabletMode = false
     private var mDetailsFragment: DetailsFragment = DetailsFragment()
     private var mRecyclerAdapter: RecyclerAdapter? = null
     private var mRequestsProcessor: RequestsProcessor? = null
@@ -56,9 +52,10 @@ class MainActivity : AppCompatActivity(),
         mRequestsProcessor = RequestsProcessor(this, this)
         if (savedInstanceState == null) {
             DLog.i(LOG_TAG,"savedInstanceState == null")
-            // Start from scratch
+            // Fresh launch
             CustomAnimationUtils.animateToolbar(this, toolbar, this)
         } else {
+            // Orientation changed
             mListItems = savedInstanceState.getParcelableArrayList(SAVE_INSTANCE_KEY_FEED)
             handleOrientationChange()
         }
@@ -69,25 +66,19 @@ class MainActivity : AppCompatActivity(),
     private fun initUi() {
         setSupportActionBar(toolbar)
         main_swipe_refresh_layout.setOnRefreshListener { makeRequest() }
-//        if (property_detail_container != null) {
-//            mIsTabletMode = true
-//        }
-        mRecyclerAdapter = RecyclerAdapter(this, this)
+        mRecyclerAdapter = RecyclerAdapter(this)
         main_recycler_view.adapter = mRecyclerAdapter
         showHideEmptyListMessage(true)
     }
 
     private fun instantiateFragment() {
-        /*val fragment = DetailsFragment().apply {
-            arguments = Bundle().apply {
-                putParcelableArrayList(DetailsFragment.INTENT_EXTRA_IMAGES, mListItems)
-            }
-        }*/
         supportFragmentManager
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.detail_view_container, mDetailsFragment)
                 .commit()
+
+        mRecyclerAdapter?.setRecyclerItemClickListener(mDetailsFragment)
     }
 
     private fun handleOrientationChange() {
@@ -97,11 +88,6 @@ class MainActivity : AppCompatActivity(),
         main_swipe_refresh_layout.isRefreshing = false
         mRecyclerAdapter?.setListItems(mListItems)
         showHideEmptyListMessage(false)
-    }
-
-    override fun onRecyclerItemClick(image: ImageItem?) {
-        DLog.i(LOG_TAG, "onRecyclerItemClick")
-        DLog.i(LOG_TAG, "item?.title " + image?.title)
     }
 
     override fun onToolbarAnimationEnd() {
@@ -138,10 +124,11 @@ class MainActivity : AppCompatActivity(),
     override fun responseError(error: VolleyError) {
         DLog.i(LOG_TAG, "responseError: " + error.toString())
         recycler_view_empty_text_view.setText(R.string.feed_empty_list_error_message)
-        val snackbarMessage = if (isNetworkConnected)
-            getString(R.string.snackbar_feed_load_error)
-        else
-            getString(R.string.snackbar_network_error_message)
+        val snackbarMessage = when(isNetworkConnected) {
+            true -> getString(R.string.snackbar_feed_load_error)
+            false -> getString(R.string.snackbar_network_error_message)
+        }
+
         Snackbar.make(main_recycler_view, snackbarMessage, Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.refresh, { makeRequest() })
                 .show()
@@ -157,6 +144,10 @@ class MainActivity : AppCompatActivity(),
 
     override fun onPageSelected(position: Int) {
         DLog.i(LOG_TAG, "onPageSelected: $position")
+        main_recycler_view.smoothScrollToPosition(position)
+
+        /*var snapHelper: SnapHelper = LinearSnapHelper()
+        snapHelper.attachToRecyclerView(main_recycler_view)*/
     }
 
     override fun onStop() {

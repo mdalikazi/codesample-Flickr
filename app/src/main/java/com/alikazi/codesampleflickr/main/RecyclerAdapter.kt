@@ -26,7 +26,7 @@ import com.bumptech.glide.request.target.Target
 /**
  * Created by kazi_ on 15-Apr-18.
  */
-class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickListener) :
+class RecyclerAdapter(context: Context) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         CustomAnimationUtils.ListAnimationListener {
 
@@ -38,7 +38,7 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
     private var mContext = context
     private var mAnimate: Boolean = false
     private var mListItems: ArrayList<ImageItem>? = null
-    private var mItemClickListener = itemClickListener
+    private var mItemClickListener: RecyclerItemClickListener? = null
 
     fun setListItems(listItems: ArrayList<ImageItem>?) {
         DLog.i(LOG_TAG, "setListItems")
@@ -47,6 +47,10 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
         mListItems = listItems
         mAnimate = true
         notifyDataSetChanged()
+    }
+
+    fun setRecyclerItemClickListener(itemClickListener: RecyclerItemClickListener) {
+        mItemClickListener = itemClickListener
     }
 
     override fun onListAnimationEnd() {
@@ -71,7 +75,7 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
         }
         val adapterPosition = holder.adapterPosition
         val image: ImageItem? = mListItems?.get(adapterPosition)
-        holder.itemView.setOnClickListener({ mItemClickListener.onRecyclerItemClick(image)})
+        holder.itemView.setOnClickListener({ mItemClickListener?.onRecyclerItemClick(adapterPosition, image)})
 
         when (holder.itemViewType) {
             VIEW_TYPE_ITEM -> {
@@ -115,7 +119,7 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
     }
 
     interface RecyclerItemClickListener {
-        fun onRecyclerItemClick(image: ImageItem?)
+        fun onRecyclerItemClick(position: Int, image: ImageItem?)
     }
 
 }

@@ -36,7 +36,6 @@ class ImagePagerAdapter(context: Context, images: ArrayList<ImageItem>?) : Pager
     override fun getCount(): Int = when(mImages) {
         null -> 0
         else -> {
-            DLog.d(LOG_TAG, "mImages.size: ${mImages!!.size}")
             mImages!!.size
         }
     }
