@@ -12,6 +12,7 @@ import com.alikazi.codesampleflickr.R
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
+import com.alikazi.codesampleflickr.utils.CustomViewUtils
 import com.alikazi.codesampleflickr.utils.DLog
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -81,7 +82,7 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
                         .apply(RequestOptions()
                                 .encodeQuality(100)
                                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                .placeholder(R.drawable.ic_placeholder_photo))
+                                .placeholder(CustomViewUtils.getPhotoPlaceholderIcon(mContext)))
                         .listener(object : RequestListener<Drawable> {
                             override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
                                 viewHolder.progressBar.visibility = View.GONE
@@ -94,6 +95,7 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
                             }
                         })
                         .into(viewHolder.imageView)
+
             }
         }
     }
