@@ -22,7 +22,8 @@ import kotlinx.android.synthetic.main.toolbar.*
 class MainActivity : AppCompatActivity(),
         CustomAnimationUtils.ToolbarAnimationListener,
         RequestsProcessor.RequestResponseListener,
-        RecyclerAdapter.RecyclerItemClickListener {
+        RecyclerAdapter.RecyclerItemClickListener,
+        DetailsFragment.OnViewPagerImageChangeListener {
 
     companion object {
 
@@ -32,6 +33,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private var mIsTabletMode = false
+    private var mDetailsFragment: DetailsFragment = DetailsFragment()
     private var mRecyclerAdapter: RecyclerAdapter? = null
     private var mRequestsProcessor: RequestsProcessor? = null
     private var mListItems: ArrayList<ImageItem>? = ArrayList()
@@ -49,6 +51,7 @@ class MainActivity : AppCompatActivity(),
         setTheme(R.style.AppTheme)
         setContentView(R.layout.activity_main)
         initUi()
+        instantiateFragment()
 
         mRequestsProcessor = RequestsProcessor(this, this)
         if (savedInstanceState == null) {
@@ -59,6 +62,8 @@ class MainActivity : AppCompatActivity(),
             mListItems = savedInstanceState.getParcelableArrayList(SAVE_INSTANCE_KEY_FEED)
             handleOrientationChange()
         }
+
+        // TODO REFRESH MENU BUTTON
     }
 
     private fun initUi() {
@@ -70,6 +75,19 @@ class MainActivity : AppCompatActivity(),
         mRecyclerAdapter = RecyclerAdapter(this, this)
         main_recycler_view.adapter = mRecyclerAdapter
         showHideEmptyListMessage(true)
+    }
+
+    private fun instantiateFragment() {
+        /*val fragment = DetailsFragment().apply {
+            arguments = Bundle().apply {
+                putParcelableArrayList(DetailsFragment.INTENT_EXTRA_IMAGES, mListItems)
+            }
+        }*/
+        supportFragmentManager
+                .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .replace(R.id.detail_view_container, mDetailsFragment)
+                .commit()
     }
 
     private fun handleOrientationChange() {
@@ -84,21 +102,11 @@ class MainActivity : AppCompatActivity(),
     override fun onRecyclerItemClick(image: ImageItem?) {
         DLog.i(LOG_TAG, "onRecyclerItemClick")
         DLog.i(LOG_TAG, "item?.title " + image?.title)
-
-        val fragment = DetailsFragment().apply {
-            arguments = Bundle().apply {
-                putParcelable(DetailsFragment.INTENT_EXTRA_RECYCLER_ITEM, image)
-            }
-        }
-        supportFragmentManager
-                .beginTransaction()
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .replace(R.id.detail_view_container, fragment)
-                .commit()
     }
 
     override fun onToolbarAnimationEnd() {
         DLog.i(LOG_TAG, "onToolbarAnimationEnd")
+        toolbar.title = getString(R.string.main_title)
         recycler_view_empty_text_view.text = getString(R.string.feed_empty_list_message)
         makeRequest()
     }
@@ -119,9 +127,10 @@ class MainActivity : AppCompatActivity(),
 
     override fun responseOk(items: Items) {
         DLog.i(LOG_TAG, "responseOk")
-        mListItems = items.items
+        mListItems = items.images
         mRecyclerAdapter?.setListItems(mListItems)
-        toolbar.title = items.title
+        mDetailsFragment?.setPagerItems(mListItems)
+        mDetailsFragment?.setImageChangeListener(this)
         main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
@@ -144,6 +153,10 @@ class MainActivity : AppCompatActivity(),
     private fun showHideEmptyListMessage(showMessage: Boolean) {
         recycler_view_empty_text_view.visibility = if (showMessage) View.VISIBLE else View.GONE
         main_recycler_view.visibility = if (showMessage) View.GONE else View.VISIBLE
+    }
+
+    override fun onPageSelected(position: Int) {
+        DLog.i(LOG_TAG, "onPageSelected: $position")
     }
 
     override fun onStop() {

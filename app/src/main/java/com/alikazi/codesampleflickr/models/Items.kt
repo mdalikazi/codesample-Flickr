@@ -1,6 +1,7 @@
 package com.alikazi.codesampleflickr.models
 
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
@@ -9,4 +10,5 @@ data class Items(var title: String,
                  var description: String,
                  var modified: String,
                  var generator: String,
-                 var items: ArrayList<ImageItem>) : Parcelable
+                 @SerializedName("items")
+                 var images: ArrayList<ImageItem>) : Parcelable

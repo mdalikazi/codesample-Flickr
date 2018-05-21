@@ -77,10 +77,9 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
             VIEW_TYPE_ITEM -> {
                 val viewHolder: ImageItemViewHolder = holder as ImageItemViewHolder
                 Glide.with(mContext)
-                        .load(image?.media?.m)
+                        .load(image?.media?.url)
                         .transition(DrawableTransitionOptions().crossFade())
                         .apply(RequestOptions()
-                                .encodeQuality(100)
                                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                                 .placeholder(CustomViewUtils.getPhotoPlaceholderIcon(mContext)))
                         .listener(object : RequestListener<Drawable> {

@@ -23,4 +23,10 @@
         android:button="@drawable/heart_checkbox"
         android:checked="false"/>
 
+    <ProgressBar
+        android:id="@+id/pager_item_progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
 </RelativeLayout>
