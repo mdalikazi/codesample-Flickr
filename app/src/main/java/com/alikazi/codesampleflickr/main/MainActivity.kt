@@ -6,6 +6,7 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.SnapHelper
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
@@ -16,6 +17,7 @@ import com.alikazi.codesampleflickr.models.Items
 import com.alikazi.codesampleflickr.network.RequestQueueHelper
 import com.alikazi.codesampleflickr.network.RequestsProcessor
 import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
+import com.alikazi.codesampleflickr.utils.CustomViewUtils
 import com.alikazi.codesampleflickr.utils.DLog
 import com.alikazi.codesampleflickr.utils.LeftSnapHelper
 import com.android.volley.VolleyError
@@ -37,10 +39,11 @@ class MainActivity : AppCompatActivity(),
         private const val SAVE_INSTANCE_KEY_FEED = "SAVE_INSTANCE_KEY_FEED"
     }
 
-    private var mDetailsFragment: DetailsFragment = DetailsFragment()
-    private var mRecyclerAdapter: RecyclerAdapter? = null
-    private var mRequestsProcessor: RequestsProcessor? = null
     private var mListItems: ArrayList<ImageItem>? = ArrayList()
+    private var mDetailsFragment: DetailsFragment = DetailsFragment()
+    private var mRecyclerAdapter: RecyclerAdapter = RecyclerAdapter(this)
+    private var mLayoutManager: LinearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+    private var mRequestsProcessor: RequestsProcessor = RequestsProcessor(this, this)
 
     private val isNetworkConnected: Boolean
         get() {
@@ -57,8 +60,6 @@ class MainActivity : AppCompatActivity(),
         startAppCenter()
         initUi()
         instantiateFragment()
-
-        mRequestsProcessor = RequestsProcessor(this, this)
 
         if (savedInstanceState == null) {
             DLog.i(LOG_TAG,"savedInstanceState == null")
@@ -87,7 +88,6 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun setupRecyclerView() {
-        mRecyclerAdapter = RecyclerAdapter(this)
         main_recycler_view.adapter = mRecyclerAdapter
         var snapHelper: SnapHelper = LeftSnapHelper()
         snapHelper.attachToRecyclerView(main_recycler_view)
@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity(),
                 .replace(R.id.detail_view_container, mDetailsFragment)
                 .commit()
 
-        mRecyclerAdapter?.setRecyclerItemClickListener(mDetailsFragment)
+        mRecyclerAdapter.setRecyclerItemClickListener(mDetailsFragment)
     }
 
     private fun handleOrientationChange() {
@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity(),
         val layoutParams = toolbar.layoutParams
         layoutParams?.height = CustomAnimationUtils.getDefaultActionBarHeightInPixels(this).toInt()
         main_swipe_refresh_layout.isRefreshing = false
-        mRecyclerAdapter?.setListItems(mListItems)
+        mRecyclerAdapter.setListItems(mListItems)
         showHideEmptyListMessage(false)
     }
 
@@ -136,9 +136,9 @@ class MainActivity : AppCompatActivity(),
     override fun responseOk(items: Items) {
         DLog.i(LOG_TAG, "responseOk")
         mListItems = items.images
-        mRecyclerAdapter?.setListItems(mListItems)
-        mDetailsFragment?.setPagerItems(mListItems)
-        mDetailsFragment?.setImageChangeListener(this)
+        mRecyclerAdapter.setListItems(mListItems)
+        mDetailsFragment.setPagerItems(mListItems)
+        mDetailsFragment.setImageChangeListener(this)
         main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
@@ -166,8 +166,12 @@ class MainActivity : AppCompatActivity(),
 
     override fun onPageSelected(position: Int) {
         DLog.i(LOG_TAG, "onPageSelected: $position")
-        main_recycler_view.smoothScrollToPosition(position)
-        mRecyclerAdapter?.setSelectedPositionFromViewPager(position)
+        // Taking measuredWidth of only the first child is enough
+        // because in our case all children are the same size
+        var measuredWidth = main_recycler_view.getChildAt(0).measuredWidth
+        var scrollByX = CustomViewUtils.getComplexUnitPx(this, measuredWidth.toFloat()).toInt()
+        main_recycler_view.scrollBy(scrollByX, 0)
+        mRecyclerAdapter.setSelectedPositionFromViewPager(position)
     }
 
     override fun onStop() {

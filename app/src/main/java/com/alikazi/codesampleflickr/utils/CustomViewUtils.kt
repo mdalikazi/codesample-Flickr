@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.support.annotation.ColorRes
 import android.support.annotation.DrawableRes
 import android.support.v4.content.ContextCompat
+import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -52,6 +53,10 @@ class CustomViewUtils {
                         }
                     })
                     .into(imageView)
+        }
+
+        fun getComplexUnitPx(context: Context, measuredWidth: Float) : Float {
+            return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, measuredWidth, context.resources.displayMetrics)
         }
     }
 }
