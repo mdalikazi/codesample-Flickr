@@ -145,6 +145,7 @@ class MainActivity : AppCompatActivity(),
     override fun onPageSelected(position: Int) {
         DLog.i(LOG_TAG, "onPageSelected: $position")
         main_recycler_view.smoothScrollToPosition(position)
+        mRecyclerAdapter?.setSelectedPositionFromViewPager(position)
 
         /*var snapHelper: SnapHelper = LinearSnapHelper()
         snapHelper.attachToRecyclerView(main_recycler_view)*/

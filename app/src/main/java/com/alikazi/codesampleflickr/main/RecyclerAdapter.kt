@@ -28,6 +28,7 @@ class RecyclerAdapter(context: Context) :
 
     private var mContext = context
     private var mAnimate: Boolean = false
+    private var mSelectedItemPosition: Int = 0
     private var mListItems: ArrayList<ImageItem>? = null
     private var mItemClickListener: RecyclerItemClickListener? = null
 
@@ -44,8 +45,22 @@ class RecyclerAdapter(context: Context) :
         mItemClickListener = itemClickListener
     }
 
+    /**
+     * When user swipes ViewPager, recycler adapter should highlight the current image
+     * @param selectedPosition: Position of the new image in ViewPager
+     */
+    fun setSelectedPositionFromViewPager(selectedPosition: Int) {
+        if (mSelectedItemPosition != selectedPosition) {
+            notifyItemChanged(mSelectedItemPosition)
+            mSelectedItemPosition = selectedPosition
+            notifyItemChanged(selectedPosition)
+        }
+    }
+
+    /**
+     * Animation should happen only once at the start
+     */
     override fun onListAnimationEnd() {
-        // Animate only once at the start
         mAnimate = false
     }
 
@@ -66,7 +81,17 @@ class RecyclerAdapter(context: Context) :
         }
         val adapterPosition = holder.adapterPosition
         val image: ImageItem? = mListItems?.get(adapterPosition)
-        holder.itemView.setOnClickListener({ mItemClickListener?.onRecyclerItemClick(adapterPosition, image)})
+        holder.itemView.isSelected = (adapterPosition == mSelectedItemPosition)
+        holder.itemView.setOnClickListener({
+            // Unselect previous item
+            notifyItemChanged(mSelectedItemPosition)
+            // Select clicked item
+            holder.itemView.isSelected = true
+            // Save selected position
+            mSelectedItemPosition = adapterPosition
+            // Update ViewPager
+            mItemClickListener?.onRecyclerItemClick(adapterPosition)
+        })
 
         when (holder.itemViewType) {
             VIEW_TYPE_ITEM -> {
@@ -95,7 +120,10 @@ class RecyclerAdapter(context: Context) :
     }
 
     interface RecyclerItemClickListener {
-        fun onRecyclerItemClick(position: Int, image: ImageItem?)
+        /**
+         * Let ViewPager know recycler adapter selected image
+         */
+        fun onRecyclerItemClick(position: Int)
     }
 
 }
