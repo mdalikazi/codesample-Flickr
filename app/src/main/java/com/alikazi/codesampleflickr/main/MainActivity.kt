@@ -164,12 +164,15 @@ class MainActivity : AppCompatActivity(),
         main_recycler_view.visibility = if (showMessage) View.GONE else View.VISIBLE
     }
 
-    override fun onPageSelected(position: Int) {
+    override fun onPageSelected(position: Int, scrollToRight: Boolean) {
         DLog.i(LOG_TAG, "onPageSelected: $position")
         // Taking measuredWidth of only the first child is enough
         // because in our case all children are the same size
         var measuredWidth = main_recycler_view.getChildAt(0).measuredWidth
         var scrollByX = CustomViewUtils.getComplexUnitPx(this, measuredWidth.toFloat()).toInt()
+        when(scrollToRight) {
+            false -> scrollByX = -scrollByX
+        }
         main_recycler_view.scrollBy(scrollByX, 0)
         mRecyclerAdapter.setSelectedPositionFromViewPager(position)
     }

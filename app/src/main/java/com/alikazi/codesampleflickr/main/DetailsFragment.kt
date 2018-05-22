@@ -28,6 +28,7 @@ class DetailsFragment : Fragment(),
     }
 
     private var mSelectedPosition = 0
+    private var mDiff = 0
     private var mViewPager: ViewPager? = null
     private var mEmptyTextView: TextView? = null
     private var mImages: ArrayList<ImageItem>? = ArrayList()
@@ -53,19 +54,29 @@ class DetailsFragment : Fragment(),
         DLog.i(LOG_TAG, "setupViewPager")
         mViewPager?.offscreenPageLimit = 0
         mViewPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+
+            }
+
             override fun onPageSelected(position: Int) {
                 DLog.i(LOG_TAG, "onPageSelected: $position")
+                mDiff = mSelectedPosition - position
+                DLog.i(LOG_TAG, "mDiff: $mDiff")
                 mSelectedPosition = position
             }
 
             override fun onPageScrollStateChanged(state: Int) {
                 if (state == ViewPager.SCROLL_STATE_IDLE) {
-                    DLog.i(LOG_TAG, "onPageScrollStateChanged")
-                    mImageChangeListener?.onPageSelected(mSelectedPosition)
+                    // If mDiff < 0 then user scrolled to the right (position increased)
+                    // If mDiff > 0 then user scrolled to the left (position decreased)
+                    // If mDiff == 0 user started scrolling but did not finish -> dont do anything
+                    if (mDiff != 0) {
+                        mImageChangeListener?.onPageSelected(mSelectedPosition, mDiff < 0)
+                        // Reset mDiff in case user does not fully scroll the next time
+                        // in which case mDiff would carry the previous value and trigger onPageSelected
+                        mDiff = 0
+                    }
                 }
-            }
-
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
             }
         })
         mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
@@ -78,6 +89,6 @@ class DetailsFragment : Fragment(),
     }
 
     interface OnViewPagerImageChangeListener {
-        fun onPageSelected(position: Int)
+        fun onPageSelected(position: Int, scrollToRight: Boolean)
     }
 }
