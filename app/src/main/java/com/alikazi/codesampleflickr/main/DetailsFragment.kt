@@ -61,7 +61,6 @@ class DetailsFragment : Fragment(),
             override fun onPageSelected(position: Int) {
                 DLog.i(LOG_TAG, "onPageSelected: $position")
                 mDiff = mSelectedPosition - position
-                DLog.i(LOG_TAG, "mDiff: $mDiff")
                 mSelectedPosition = position
             }
 
@@ -71,7 +70,7 @@ class DetailsFragment : Fragment(),
                     // If mDiff > 0 then user scrolled to the left (position decreased)
                     // If mDiff == 0 user started scrolling but did not finish -> dont do anything
                     if (mDiff != 0) {
-                        mImageChangeListener?.onPageSelected(mSelectedPosition, mDiff < 0)
+                        mImageChangeListener?.onPageSelected(mSelectedPosition, mDiff)
                         // Reset mDiff in case user does not fully scroll the next time
                         // in which case mDiff would carry the previous value and trigger onPageSelected
                         mDiff = 0
@@ -89,6 +88,6 @@ class DetailsFragment : Fragment(),
     }
 
     interface OnViewPagerImageChangeListener {
-        fun onPageSelected(position: Int, scrollToRight: Boolean)
+        fun onPageSelected(position: Int, diff: Int)
     }
 }

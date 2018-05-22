@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity(),
         private const val SAVE_INSTANCE_KEY_FEED = "SAVE_INSTANCE_KEY_FEED"
     }
 
+    private var mMeasuredWithPx = 0
     private var mListItems: ArrayList<ImageItem>? = ArrayList()
     private var mDetailsFragment: DetailsFragment = DetailsFragment()
     private var mRecyclerAdapter: RecyclerAdapter = RecyclerAdapter(this)
@@ -164,17 +165,37 @@ class MainActivity : AppCompatActivity(),
         main_recycler_view.visibility = if (showMessage) View.GONE else View.VISIBLE
     }
 
-    override fun onPageSelected(position: Int, scrollToRight: Boolean) {
+    override fun onPageSelected(position: Int, diff: Int) {
         DLog.i(LOG_TAG, "onPageSelected: $position")
+        DLog.i(LOG_TAG, "diff: $diff")
+
+        if (mMeasuredWithPx <= 0) {
+            calculateScrollByXForOneChild()
+        }
+
+        // If user clicks on lets say 3rd item to the right from the recycler list
+        // we need to scroll the view by 3 times
+        var scrollByX = mMeasuredWithPx.times(Math.abs(diff))
+
+        when(diff < 0) {
+            true -> {
+                // Scrolling to the right. Keep scrollByX positive.
+            }
+            false -> {
+                // Scrolling to the left. scrollByX should be negative.
+                scrollByX = -scrollByX
+            }
+        }
+
+        main_recycler_view.scrollBy(scrollByX, 0)
+        mRecyclerAdapter.setSelectedPositionFromViewPager(position)
+    }
+
+    private fun calculateScrollByXForOneChild() {
         // Taking measuredWidth of only the first child is enough
         // because in our case all children are the same size
         var measuredWidth = main_recycler_view.getChildAt(0).measuredWidth
-        var scrollByX = CustomViewUtils.getComplexUnitPx(this, measuredWidth.toFloat()).toInt()
-        when(scrollToRight) {
-            false -> scrollByX = -scrollByX
-        }
-        main_recycler_view.scrollBy(scrollByX, 0)
-        mRecyclerAdapter.setSelectedPositionFromViewPager(position)
+        mMeasuredWithPx = CustomViewUtils.getComplexUnitPx(this, measuredWidth.toFloat()).toInt()
     }
 
     override fun onStop() {
