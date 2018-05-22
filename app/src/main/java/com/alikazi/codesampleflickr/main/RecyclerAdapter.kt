@@ -1,7 +1,6 @@
 package com.alikazi.codesampleflickr.main
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -14,19 +13,11 @@ import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
 import com.alikazi.codesampleflickr.utils.CustomViewUtils
 import com.alikazi.codesampleflickr.utils.DLog
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
 
 /**
  * Created by kazi_ on 15-Apr-18.
  */
-class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickListener) :
+class RecyclerAdapter(context: Context) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         CustomAnimationUtils.ListAnimationListener {
 
@@ -37,8 +28,9 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
 
     private var mContext = context
     private var mAnimate: Boolean = false
+    private var mSelectedItemPosition: Int = 0
     private var mListItems: ArrayList<ImageItem>? = null
-    private var mItemClickListener = itemClickListener
+    private var mItemClickListener: RecyclerItemClickListener? = null
 
     fun setListItems(listItems: ArrayList<ImageItem>?) {
         DLog.i(LOG_TAG, "setListItems")
@@ -49,8 +41,26 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
         notifyDataSetChanged()
     }
 
+    fun setRecyclerItemClickListener(itemClickListener: RecyclerItemClickListener) {
+        mItemClickListener = itemClickListener
+    }
+
+    /**
+     * When user swipes ViewPager, recycler adapter should highlight the current image
+     * @param selectedPosition: Position of the new image in ViewPager
+     */
+    fun setSelectedPositionFromViewPager(selectedPosition: Int) {
+        if (mSelectedItemPosition != selectedPosition) {
+            notifyItemChanged(mSelectedItemPosition)
+            mSelectedItemPosition = selectedPosition
+            notifyItemChanged(selectedPosition)
+        }
+    }
+
+    /**
+     * Animation should happen only once at the start
+     */
     override fun onListAnimationEnd() {
-        // Animate only once at the start
         mAnimate = false
     }
 
@@ -71,31 +81,25 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
         }
         val adapterPosition = holder.adapterPosition
         val image: ImageItem? = mListItems?.get(adapterPosition)
-        holder.itemView.setOnClickListener({ mItemClickListener.onRecyclerItemClick(image)})
+        holder.itemView.isSelected = (adapterPosition == mSelectedItemPosition)
+        holder.itemView.setOnClickListener({
+            // Unselect previous item
+            notifyItemChanged(mSelectedItemPosition)
+            // Select clicked item
+            holder.itemView.isSelected = true
+            // Save selected position
+            mSelectedItemPosition = adapterPosition
+            // Update ViewPager
+            mItemClickListener?.onRecyclerItemClick(adapterPosition)
+        })
 
         when (holder.itemViewType) {
             VIEW_TYPE_ITEM -> {
                 val viewHolder: ImageItemViewHolder = holder as ImageItemViewHolder
-                Glide.with(mContext)
-                        .load(image?.media?.m)
-                        .transition(DrawableTransitionOptions().crossFade())
-                        .apply(RequestOptions()
-                                .encodeQuality(100)
-                                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                .placeholder(CustomViewUtils.getPhotoPlaceholderIcon(mContext)))
-                        .listener(object : RequestListener<Drawable> {
-                            override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
-                                viewHolder.progressBar.visibility = View.GONE
-                                return false
-                            }
-
-                            override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-                                viewHolder.progressBar.visibility = View.GONE
-                                return false
-                            }
-                        })
-                        .into(viewHolder.imageView)
-
+                CustomViewUtils.showImageWithGlide(mContext,
+                        image?.media?.url,
+                        viewHolder.imageView,
+                        viewHolder.progressBar)
             }
         }
     }
@@ -116,7 +120,10 @@ class RecyclerAdapter(context: Context, itemClickListener: RecyclerItemClickList
     }
 
     interface RecyclerItemClickListener {
-        fun onRecyclerItemClick(image: ImageItem?)
+        /**
+         * Let ViewPager know recycler adapter selected image
+         */
+        fun onRecyclerItemClick(position: Int)
     }
 
 }

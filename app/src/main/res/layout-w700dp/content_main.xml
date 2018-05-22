@@ -43,7 +43,7 @@
     <View
         android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:background="@color/colorIconInactive"/>
+        android:background="@color/colorDivider"/>
 
     <FrameLayout
         android:id="@+id/detail_view_container"

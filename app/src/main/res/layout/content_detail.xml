@@ -17,11 +17,11 @@
         android:layout_height="wrap_content"
         tools:text="@string/view_pager_empty_message"/>
 
-    <ImageView
+    <!--<ImageView
         android:id="@+id/test_image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:src="@drawable/ic_placeholder_photo"
-        tools:alpha="0.5" />
+        tools:alpha="0.5" />-->
 
 </RelativeLayout>
