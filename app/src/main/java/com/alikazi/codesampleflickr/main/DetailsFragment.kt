@@ -68,9 +68,8 @@ class DetailsFragment : Fragment(),
         mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
     }
 
-    override fun onRecyclerItemClick(position: Int, image: ImageItem?) {
+    override fun onRecyclerItemClick(position: Int) {
         DLog.i(LOG_TAG, "onRecyclerItemClick")
-        DLog.i(LOG_TAG, "item?.title " + image?.title)
         mViewPager?.setCurrentItem(position, true)
 
     }
