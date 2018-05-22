@@ -21,6 +21,8 @@ import com.alikazi.codesampleflickr.utils.LeftSnapHelper
 import com.android.volley.VolleyError
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.crashes.Crashes
+import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.toolbar.*
 
 /**
  * Created by kazi_ on 22-May-18.
