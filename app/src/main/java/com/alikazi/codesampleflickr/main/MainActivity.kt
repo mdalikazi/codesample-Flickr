@@ -6,10 +6,10 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.SnapHelper
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
 import com.alikazi.codesampleflickr.R
-import com.alikazi.codesampleflickr.R.id.*
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.models.Items
@@ -17,15 +17,16 @@ import com.alikazi.codesampleflickr.network.RequestQueueHelper
 import com.alikazi.codesampleflickr.network.RequestsProcessor
 import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
 import com.alikazi.codesampleflickr.utils.DLog
+import com.alikazi.codesampleflickr.utils.LeftSnapHelper
 import com.android.volley.VolleyError
 import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.toolbar.*
 
-
-
+/**
+ * Created by kazi_ on 22-May-18.
+ */
 class MainActivity : AppCompatActivity(),
         CustomAnimationUtils.ToolbarAnimationListener,
         RequestsProcessor.RequestResponseListener,
@@ -81,9 +82,15 @@ class MainActivity : AppCompatActivity(),
     private fun initUi() {
         setSupportActionBar(toolbar)
         main_swipe_refresh_layout.setOnRefreshListener { makeRequest() }
+        setupRecyclerView()
+        showHideEmptyListMessage(true)
+    }
+
+    private fun setupRecyclerView() {
         mRecyclerAdapter = RecyclerAdapter(this)
         main_recycler_view.adapter = mRecyclerAdapter
-        showHideEmptyListMessage(true)
+        var snapHelper: SnapHelper = LeftSnapHelper()
+        snapHelper.attachToRecyclerView(main_recycler_view)
     }
 
     private fun instantiateFragment() {
@@ -161,9 +168,6 @@ class MainActivity : AppCompatActivity(),
         DLog.i(LOG_TAG, "onPageSelected: $position")
         main_recycler_view.smoothScrollToPosition(position)
         mRecyclerAdapter?.setSelectedPositionFromViewPager(position)
-
-        /*var snapHelper: SnapHelper = LinearSnapHelper()
-        snapHelper.attachToRecyclerView(main_recycler_view)*/
     }
 
     override fun onStop() {

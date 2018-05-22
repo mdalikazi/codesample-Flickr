@@ -13,6 +13,9 @@ import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.utils.DLog
 import kotlinx.android.synthetic.main.content_detail.view.*
 
+/**
+ * Created by kazi_ on 22-May-18.
+ */
 class DetailsFragment : Fragment(),
         RecyclerAdapter.RecyclerItemClickListener {
 

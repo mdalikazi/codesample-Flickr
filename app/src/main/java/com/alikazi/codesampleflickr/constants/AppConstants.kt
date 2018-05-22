@@ -1,7 +1,7 @@
 package com.alikazi.codesampleflickr.constants
 
 /**
- * Created by kazi_ on 15-Apr-18.
+ * Created by kazi_ on 22-May-18.
  */
 class AppConstants {
 

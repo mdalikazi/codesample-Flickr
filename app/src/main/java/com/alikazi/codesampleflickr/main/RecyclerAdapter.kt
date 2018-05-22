@@ -15,7 +15,7 @@ import com.alikazi.codesampleflickr.utils.CustomViewUtils
 import com.alikazi.codesampleflickr.utils.DLog
 
 /**
- * Created by kazi_ on 15-Apr-18.
+ * Created by kazi_ on 22-May-18.
  */
 class RecyclerAdapter(context: Context) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>(),
