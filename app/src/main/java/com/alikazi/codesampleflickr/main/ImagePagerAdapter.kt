@@ -46,12 +46,11 @@ class ImagePagerAdapter(context: Context, images: ArrayList<ImageItem>?) : Pager
         Glide.with(mContext)
                 .load(mImages?.get(position)?.media?.url)
                 .transition(DrawableTransitionOptions().crossFade())
-                .apply(RequestOptions()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .placeholder(CustomViewUtils.getPhotoPlaceholderIcon(mContext)))
+                .apply(RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                 .listener(object : RequestListener<Drawable> {
                     override fun onLoadFailed(e: GlideException?, model: Any?, target: com.bumptech.glide.request.target.Target<Drawable>?, isFirstResource: Boolean): Boolean {
                         view.pager_item_progress_bar.visibility = View.GONE
+                        view.pager_item_image_view.setImageDrawable(CustomViewUtils.getTintedIconWithColor(mContext, R.drawable.ic_error, R.color.colorFavorite))
                         return false
                     }
 

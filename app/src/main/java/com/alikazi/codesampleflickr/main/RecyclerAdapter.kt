@@ -83,12 +83,11 @@ class RecyclerAdapter(context: Context) :
                 Glide.with(mContext)
                         .load(image?.media?.url)
                         .transition(DrawableTransitionOptions().crossFade())
-                        .apply(RequestOptions()
-                                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                                .placeholder(CustomViewUtils.getPhotoPlaceholderIcon(mContext)))
+                        .apply(RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                         .listener(object : RequestListener<Drawable> {
                             override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
                                 viewHolder.progressBar.visibility = View.GONE
+                                viewHolder.imageView.setImageDrawable(CustomViewUtils.getTintedIconWithColor(mContext, R.drawable.ic_error, R.color.colorFavorite))
                                 return false
                             }
 
