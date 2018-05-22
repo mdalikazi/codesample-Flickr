@@ -7,7 +7,9 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import com.alikazi.codesampleflickr.BuildConfig
 import com.alikazi.codesampleflickr.R
+import com.alikazi.codesampleflickr.R.id.*
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.models.Items
@@ -16,8 +18,13 @@ import com.alikazi.codesampleflickr.network.RequestsProcessor
 import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
 import com.alikazi.codesampleflickr.utils.DLog
 import com.android.volley.VolleyError
+import com.microsoft.appcenter.AppCenter
+import com.microsoft.appcenter.analytics.Analytics
+import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.toolbar.*
+
+
 
 class MainActivity : AppCompatActivity(),
         CustomAnimationUtils.ToolbarAnimationListener,
@@ -46,10 +53,12 @@ class MainActivity : AppCompatActivity(),
         DLog.i(LOG_TAG, "onCreate")
         setTheme(R.style.AppTheme)
         setContentView(R.layout.activity_main)
+        startAppCenter()
         initUi()
         instantiateFragment()
 
         mRequestsProcessor = RequestsProcessor(this, this)
+
         if (savedInstanceState == null) {
             DLog.i(LOG_TAG,"savedInstanceState == null")
             // Fresh launch
@@ -61,6 +70,12 @@ class MainActivity : AppCompatActivity(),
         }
 
         // TODO REFRESH MENU BUTTON
+    }
+
+    private fun startAppCenter() {
+        if (!BuildConfig.DEBUG) {
+            AppCenter.start(application, AppConstants.APP_CENTER_SECRET, Crashes::class.java)
+        }
     }
 
     private fun initUi() {
