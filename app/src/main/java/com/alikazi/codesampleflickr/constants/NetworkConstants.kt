@@ -1,5 +1,8 @@
 package com.alikazi.codesampleflickr.constants
 
+/**
+ * Created by kazi_ on 22-May-18.
+ */
 class NetworkConstants {
 
     companion object {
@@ -15,4 +18,5 @@ class NetworkConstants {
         const val URL_QUERY_FORMAT_VALUE = "json"
         const val URL_QUERY_NO_JSON_CALLBACK = "nojsoncallback"
     }
+
 }
