@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.support.annotation.ColorRes
 import android.support.annotation.DrawableRes
 import android.support.v4.content.ContextCompat
+import android.support.v7.widget.RecyclerView
 import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
@@ -58,6 +59,15 @@ class CustomViewUtils {
                         }
                     })
                     .into(imageView)
+        }
+
+        /**
+         * Gives measuredWidth of first child of recycler view.
+         * This can be used to caluculate how much to scroll.
+         */
+        private fun calculateScrollByXForOneChild(recyclerView: RecyclerView) : Int {
+            val measuredWidth = recyclerView.getChildAt(0).measuredWidth
+            return CustomViewUtils.getComplexUnitPx(recyclerView.context, measuredWidth.toFloat()).toInt()
         }
 
         fun getComplexUnitPx(context: Context, measuredWidth: Float) : Float {

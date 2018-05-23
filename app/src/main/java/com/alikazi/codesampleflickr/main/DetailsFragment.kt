@@ -21,7 +21,7 @@ class DetailsFragment : Fragment(),
 
     companion object {
         private const val LOG_TAG = AppConstants.LOG_TAG_MAIN
-        private const val SAVE_INSTANCE_KEY_PAGER_ITEMS = "SAVE_INSTANCE_KEY_PAGER_ITEMS"
+        const val INTENT_EXTRA_PAGER_ITEMS = "INTENT_EXTRA_PAGER_ITEMS"
     }
 
     fun setImageChangeListener(listener: OnViewPagerImageChangeListener) {
@@ -36,26 +36,17 @@ class DetailsFragment : Fragment(),
     private var mImages: ArrayList<ImageItem>? = ArrayList()
     private var mImageChangeListener: OnViewPagerImageChangeListener? = null
 
-    fun setPagerItems(images: ArrayList<ImageItem>?) {
-        DLog.i(LOG_TAG, "setPagerItems")
-        mImages?.clear()
-        mImages = images
-        if (images != null && !images.isEmpty()) {
-            mEmptyTextView?.visibility = View.GONE
-            mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        DLog.i(LOG_TAG, "onCreate")
+        arguments?.let {
+            if (it.containsKey(INTENT_EXTRA_PAGER_ITEMS)) {
+                mImages?.clear()
+                mImages = it.getParcelableArrayList(INTENT_EXTRA_PAGER_ITEMS)
+                DLog.d(LOG_TAG, "mImages != null. size: ${mImages?.size}")
+            }
         }
     }
-
-    /*override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putParcelableArrayList(SAVE_INSTANCE_KEY_PAGER_ITEMS, mImages)
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        mImages = savedInstanceState?.getParcelableArrayList(SAVE_INSTANCE_KEY_PAGER_ITEMS)
-        mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
-    }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         DLog.i(LOG_TAG, "onCreateView")
@@ -68,6 +59,8 @@ class DetailsFragment : Fragment(),
 
     private fun setupViewPager() {
         DLog.i(LOG_TAG, "setupViewPager")
+        mEmptyTextView?.visibility = View.GONE
+        mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
         mViewPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
 

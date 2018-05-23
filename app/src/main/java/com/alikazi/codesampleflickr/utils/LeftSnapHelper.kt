@@ -11,7 +11,7 @@ import android.view.View
  * Created by kazi_ on 22-May-18
  * This helper will make sure left edge of a recycler item view
  * is always snapped to left edge of the screen. This is useful for scrolling correctly.
- * Used by @MainActvity.
+ * Used by [MainActvity]'s RecyclerView
  */
 class LeftSnapHelper : LinearSnapHelper() {
 
