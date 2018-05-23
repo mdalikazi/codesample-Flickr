@@ -1,52 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.SwipeRefreshLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_swipe_refresh_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:weightSum="1"
+    android:orientation="vertical"
     tools:showIn="@layout/activity_main">
 
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/detail_view_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:weightSum="1"
-        android:orientation="vertical">
+        android:layout_weight="1"/>
 
-        <FrameLayout
-            android:id="@+id/detail_view_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorDivider"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/colorDivider"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="100dp">
 
-        <RelativeLayout
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/main_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="100dp">
+            android:orientation="horizontal"
+            tools:listitem="@layout/item_recycler_view"/>
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/main_recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                tools:listitem="@layout/item_recycler_view"/>
+        <TextView
+            android:id="@+id/recycler_view_empty_text_view"
+            style="@style/EmptyMessageStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="@string/feed_empty_list_message"
+            tools:visibility="visible"/>
 
-            <TextView
-                android:id="@+id/recycler_view_empty_text_view"
-                style="@style/EmptyMessageStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="@string/feed_empty_list_message"
-                tools:visibility="visible"/>
+    </RelativeLayout>
 
-        </RelativeLayout>
-
-    </LinearLayout>
-
-</android.support.v4.widget.SwipeRefreshLayout>
+</LinearLayout>

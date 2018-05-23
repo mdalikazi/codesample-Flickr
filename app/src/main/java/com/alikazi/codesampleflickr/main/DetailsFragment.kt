@@ -6,7 +6,6 @@ import android.support.v4.view.ViewPager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import com.alikazi.codesampleflickr.R
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
@@ -32,7 +31,6 @@ class DetailsFragment : Fragment(),
     private var mDiff = 0
     private var mComingFromRecyclerItemClick = false
     private var mViewPager: ViewPager? = null
-    private var mEmptyTextView: TextView? = null
     private var mImages: ArrayList<ImageItem>? = ArrayList()
     private var mImageChangeListener: OnViewPagerImageChangeListener? = null
 
@@ -52,14 +50,12 @@ class DetailsFragment : Fragment(),
         DLog.i(LOG_TAG, "onCreateView")
         val view = inflater.inflate(R.layout.content_detail, container, false)
         mViewPager = view.view_pager
-        mEmptyTextView = view.view_pager_empty_text_view
         setupViewPager()
         return view
     }
 
     private fun setupViewPager() {
         DLog.i(LOG_TAG, "setupViewPager")
-        mEmptyTextView?.visibility = View.GONE
         mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
         mViewPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {

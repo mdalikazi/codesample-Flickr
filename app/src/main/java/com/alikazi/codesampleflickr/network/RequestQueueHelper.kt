@@ -34,7 +34,7 @@ class RequestQueueHelper(context: Context) {
             mRequestQueue = Volley.newRequestQueue(mContext.applicationContext)
         }
 
-        return mRequestQueue!!
+        return mRequestQueue
     }
 
     fun <T> addToRequestQueue(request: Request<T>) {

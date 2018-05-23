@@ -10,11 +10,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <TextView
-        android:id="@+id/view_pager_empty_text_view"
-        style="@style/EmptyMessageStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="@string/view_pager_empty_message"/>
-
 </RelativeLayout>

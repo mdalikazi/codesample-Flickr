@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun initUi() {
         setSupportActionBar(toolbar)
-        main_swipe_refresh_layout.setOnRefreshListener { makeRequest() }
+//        makeRequest()
         setupRecyclerView()
         showHideEmptyListMessage(true)
     }
@@ -129,7 +129,6 @@ class MainActivity : AppCompatActivity(),
         mDefaultChildCount = 0
         mRecyclerAdapter.setListItems(mListItems)
         mRecyclerAdapter.setSelectedPositionFromViewPager(mPreviouslySelectedPosition)
-        main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
 
@@ -142,7 +141,6 @@ class MainActivity : AppCompatActivity(),
 
     private fun makeRequest() {
         mRequestsProcessor.getProperties()
-        main_swipe_refresh_layout.isRefreshing = true
         recycler_view_empty_text_view.setText(R.string.feed_empty_list_message)
     }
 
@@ -158,7 +156,6 @@ class MainActivity : AppCompatActivity(),
         mListItems = items.images
         mRecyclerAdapter.setListItems(mListItems)
         instantiateFragment()
-        main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
 
@@ -175,7 +172,6 @@ class MainActivity : AppCompatActivity(),
                 .show()
 
         showHideEmptyListMessage(true)
-        main_swipe_refresh_layout.isRefreshing = false
     }
 
     private fun showHideEmptyListMessage(showMessage: Boolean) {
