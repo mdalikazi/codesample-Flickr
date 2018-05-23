@@ -18,7 +18,6 @@ import com.alikazi.codesampleflickr.models.Items
 import com.alikazi.codesampleflickr.network.RequestQueueHelper
 import com.alikazi.codesampleflickr.network.RequestsProcessor
 import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
-import com.alikazi.codesampleflickr.utils.CustomViewUtils
 import com.alikazi.codesampleflickr.utils.DLog
 import com.alikazi.codesampleflickr.utils.LeftSnapHelper
 import com.android.volley.VolleyError
@@ -38,12 +37,12 @@ class MainActivity : AppCompatActivity(),
     companion object {
         private const val LOG_TAG = AppConstants.LOG_TAG_MAIN
         private const val SAVE_INSTANCE_KEY_FEED = "SAVE_INSTANCE_KEY_FEED"
+        private const val SAVE_INSTANCE_KEY_SCROLL_POSITION = "SAVE_INSTANCE_KEY_SCROLL_POSITION"
     }
 
-    private var mMeasuredWithPx = 0
     private var mDefaultChildCount = 0
+    private var mPreviouslySelectedPosition = 0
     private var mListItems: ArrayList<ImageItem>? = ArrayList()
-    private var mDetailsFragment: DetailsFragment = DetailsFragment()
     private var mRecyclerAdapter: RecyclerAdapter = RecyclerAdapter(this)
     private var mLayoutManager: LinearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     private var mRequestsProcessor: RequestsProcessor = RequestsProcessor(this, this)
@@ -71,6 +70,7 @@ class MainActivity : AppCompatActivity(),
         } else {
             // Orientation changed
             mListItems = savedInstanceState.getParcelableArrayList(SAVE_INSTANCE_KEY_FEED)
+            mPreviouslySelectedPosition = savedInstanceState.getInt(SAVE_INSTANCE_KEY_SCROLL_POSITION)
             handleOrientationChange()
         }
 
@@ -104,14 +104,20 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun instantiateFragment() {
+        val fragment = DetailsFragment().apply {
+            arguments = Bundle().apply {
+                putParcelableArrayList(DetailsFragment.INTENT_EXTRA_PAGER_ITEMS, mListItems)
+            }
+         }
+
         supportFragmentManager
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .add(R.id.detail_view_container, mDetailsFragment)
+                .replace(R.id.detail_view_container, fragment)
                 .commit()
 
-        mRecyclerAdapter.setRecyclerItemClickListener(mDetailsFragment)
-        mDetailsFragment.setImageChangeListener(this)
+        mRecyclerAdapter.setRecyclerItemClickListener(fragment)
+        fragment.setImageChangeListener(this)
     }
 
     private fun handleOrientationChange() {
@@ -119,9 +125,10 @@ class MainActivity : AppCompatActivity(),
         // Toolbar should not re-animate on orientation change
         val layoutParams = toolbar.layoutParams
         layoutParams?.height = CustomAnimationUtils.getDefaultActionBarHeightInPixels(this).toInt()
-        mDetailsFragment = DetailsFragment()
         instantiateFragment()
+        mDefaultChildCount = 0
         mRecyclerAdapter.setListItems(mListItems)
+        mRecyclerAdapter.setSelectedPositionFromViewPager(mPreviouslySelectedPosition)
         main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
@@ -143,13 +150,14 @@ class MainActivity : AppCompatActivity(),
         super.onSaveInstanceState(outState)
         DLog.i(LOG_TAG, "onSaveInstanceState")
         outState?.putParcelableArrayList(SAVE_INSTANCE_KEY_FEED, mListItems)
+        outState?.putInt(SAVE_INSTANCE_KEY_SCROLL_POSITION, mPreviouslySelectedPosition)
     }
 
     override fun responseOk(items: Items) {
         DLog.i(LOG_TAG, "responseOk")
         mListItems = items.images
         mRecyclerAdapter.setListItems(mListItems)
-        mDetailsFragment.setPagerItems(mListItems)
+        instantiateFragment()
         main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
@@ -176,9 +184,6 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onPageSelected(position: Int, diff: Int, comingFromRecyclerItemClick: Boolean) {
-        if (mMeasuredWithPx <= 0) {
-            calculateScrollByXForOneChild()
-        }
         if (mDefaultChildCount == 0) {
             getDefaultNumberOfVisibleViews()
         }
@@ -206,26 +211,22 @@ class MainActivity : AppCompatActivity(),
 
         mRecyclerAdapter.setItemsClickable(main_recycler_view.scrollState == RecyclerView.SCROLL_STATE_IDLE)
         mRecyclerAdapter.setSelectedPositionFromViewPager(position)
+        mPreviouslySelectedPosition = position
     }
 
     /**
-     * This gives how many items of recycler view are visible to the user.
-     * We calculate this only once to prevent extra calculation and the methods used
-     * are not reliable due to the nature of how RecyclerView recycles views
+     * Used by [onPageSelected]
+     * This gives how many items of recycler view are visible to the user
+     * in this particular device and orientation.
+     * We calculate this only once to prevent extra calculation during scroll
+     * and also because the methods used are not reliable for use during scroll
+     * due to how RecyclerView recycles views
+     * Make sure to reset mDefaultChildCount when orientation changes
      */
     private fun getDefaultNumberOfVisibleViews() {
         mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() -
                 mLayoutManager.findFirstCompletelyVisibleItemPosition()
         DLog.d(LOG_TAG, "mDefaultChildCount + $mDefaultChildCount")
-    }
-
-    /**
-     * Taking measuredWidth of only the first child is enough
-     * because in our case all children are the same size
-     */
-    private fun calculateScrollByXForOneChild() {
-        val measuredWidth = main_recycler_view.getChildAt(0).measuredWidth
-        mMeasuredWithPx = CustomViewUtils.getComplexUnitPx(this, measuredWidth.toFloat()).toInt()
     }
 
     override fun onStop() {
