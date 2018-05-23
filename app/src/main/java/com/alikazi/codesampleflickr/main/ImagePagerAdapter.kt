@@ -32,7 +32,7 @@ class ImagePagerAdapter(context: Context, images: ArrayList<ImageItem>?) : Pager
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int) : Any {
-        var view: View = LayoutInflater.from(mContext).inflate(R.layout.item_view_pager, container, false)
+        val view: View = LayoutInflater.from(mContext).inflate(R.layout.item_view_pager, container, false)
 
         CustomViewUtils.showImageWithGlide(mContext,
                 mImages?.get(position)?.media?.url,

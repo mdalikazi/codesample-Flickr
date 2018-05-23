@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SnapHelper
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     private var mMeasuredWithPx = 0
+    private var mDefaultChildCount = 0
     private var mListItems: ArrayList<ImageItem>? = ArrayList()
     private var mDetailsFragment: DetailsFragment = DetailsFragment()
     private var mRecyclerAdapter: RecyclerAdapter = RecyclerAdapter(this)
@@ -89,9 +91,17 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun setupRecyclerView() {
+        main_recycler_view.layoutManager = mLayoutManager
         main_recycler_view.adapter = mRecyclerAdapter
-        var snapHelper: SnapHelper = LeftSnapHelper()
+        val snapHelper: SnapHelper = LeftSnapHelper()
         snapHelper.attachToRecyclerView(main_recycler_view)
+        main_recycler_view.setItemViewCacheSize(0)
+        getDefaultNumberOfVisibleViews()
+        main_recycler_view.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                mRecyclerAdapter.setItemsClickable(newState == RecyclerView.SCROLL_STATE_IDLE)
+            }
+        })
     }
 
     private fun instantiateFragment() {
@@ -121,11 +131,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun makeRequest() {
-        if (mRequestsProcessor != null) {
-            mRequestsProcessor?.getProperties()
-            main_swipe_refresh_layout.isRefreshing = true
-            recycler_view_empty_text_view.setText(R.string.feed_empty_list_message)
-        }
+        mRequestsProcessor.getProperties()
+        main_swipe_refresh_layout.isRefreshing = true
+        recycler_view_empty_text_view.setText(R.string.feed_empty_list_message)
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -166,35 +174,45 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onPageSelected(position: Int, diff: Int) {
-        DLog.i(LOG_TAG, "onPageSelected: $position")
-        DLog.i(LOG_TAG, "diff: $diff")
-
         if (mMeasuredWithPx <= 0) {
             calculateScrollByXForOneChild()
         }
+        /*if (mDefaultChildCount <= 0) {
+            abc()
+        }*/
 
-        // If user clicks on lets say 3rd item to the right from the recycler list
-        // we need to scroll the view by 3 times
-        var scrollByX = mMeasuredWithPx.times(Math.abs(diff))
+        /*View visibleChild = recyclerView.getChildAt(0);
+        int positionOfChild = recyclerView.getChildAdapterPosition(visibleChild)*/
 
-        when(diff < 0) {
-            true -> {
-                // Scrolling to the right. Keep scrollByX positive.
+        /*for (i in 1 until mLayoutManager.childCount) {
+            var view: View? = mLayoutManager.getChildAt(i)
+            if (view != null && view.tag == position) {
+                DLog.w(LOG_TAG, "view != null && view.tag == position: " + i)
+                DLog.w(LOG_TAG, "mLayoutManager.isViewPartiallyVisible(): " +
+                        mLayoutManager.isViewPartiallyVisible(view, true, false))
+                var scrollByX = mMeasuredWithPx.times(i)
+//                main_recycler_view.scrollBy(scrollByX, 0)
+                mRecyclerAdapter.setItemsClickable(main_recycler_view.scrollState == RecyclerView.SCROLL_STATE_IDLE)
             }
-            false -> {
-                // Scrolling to the left. scrollByX should be negative.
-                scrollByX = -scrollByX
-            }
+        }*/
+        var scrollToPosition = position + mDefaultChildCount
+        DLog.d(LOG_TAG, "scrollToPosition " + scrollToPosition)
+        if (scrollToPosition < mLayoutManager.itemCount) {
+            main_recycler_view.smoothScrollToPosition(scrollToPosition)
         }
-
-        main_recycler_view.scrollBy(scrollByX, 0)
+        mRecyclerAdapter.setItemsClickable(main_recycler_view.scrollState == RecyclerView.SCROLL_STATE_IDLE)
         mRecyclerAdapter.setSelectedPositionFromViewPager(position)
+    }
+
+    private fun getDefaultNumberOfVisibleViews() {
+        mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() - mLayoutManager.findFirstCompletelyVisibleItemPosition()
+        DLog.w(LOG_TAG, "mDefaultChildCount " + mDefaultChildCount)
     }
 
     private fun calculateScrollByXForOneChild() {
         // Taking measuredWidth of only the first child is enough
         // because in our case all children are the same size
-        var measuredWidth = main_recycler_view.getChildAt(0).measuredWidth
+        val measuredWidth = main_recycler_view.getChildAt(0).measuredWidth
         mMeasuredWithPx = CustomViewUtils.getComplexUnitPx(this, measuredWidth.toFloat()).toInt()
     }
 

@@ -28,6 +28,7 @@ class RecyclerAdapter(context: Context) :
 
     private var mContext = context
     private var mAnimate: Boolean = false
+    private var mClickable: Boolean = true
     private var mSelectedItemPosition: Int = 0
     private var mListItems: ArrayList<ImageItem>? = null
     private var mItemClickListener: RecyclerItemClickListener? = null
@@ -57,6 +58,9 @@ class RecyclerAdapter(context: Context) :
         }
     }
 
+    fun setItemsClickable(clickable: Boolean) {
+        mClickable = clickable
+    }
     /**
      * Animation should happen only once at the start
      */
@@ -81,16 +85,19 @@ class RecyclerAdapter(context: Context) :
         }
         val adapterPosition = holder.adapterPosition
         val image: ImageItem? = mListItems?.get(adapterPosition)
+        holder.itemView.tag = adapterPosition // Used to identify view to calculate scroll in MainActivity
         holder.itemView.isSelected = (adapterPosition == mSelectedItemPosition)
         holder.itemView.setOnClickListener({
-            // Unselect previous item
-            notifyItemChanged(mSelectedItemPosition)
-            // Select clicked item
-            holder.itemView.isSelected = true
-            // Save selected position
-            mSelectedItemPosition = adapterPosition
-            // Update ViewPager
-            mItemClickListener?.onRecyclerItemClick(adapterPosition)
+            if (mClickable) {
+                // Unselect previous item
+                notifyItemChanged(mSelectedItemPosition)
+                // Select clicked item
+                holder.itemView.isSelected = true
+                // Save selected position
+                mSelectedItemPosition = adapterPosition
+                // Update ViewPager
+                mItemClickListener?.onRecyclerItemClick(adapterPosition)
+            }
         })
 
         when (holder.itemViewType) {

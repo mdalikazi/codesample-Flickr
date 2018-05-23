@@ -9,7 +9,6 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.TranslateAnimation
-import com.alikazi.codesampleflickr.constants.AppConstants
 
 /**
  * Created by kazi_ on 15-Apr-18.
@@ -22,7 +21,6 @@ class CustomAnimationUtils {
         private const val DURATION_SHORT: Long = 250
 
         fun animateToolbar(context: Context, toolbar: Toolbar?, listener: ToolbarAnimationListener?) {
-            DLog.i(AppConstants.LOG_TAG_MAIN, "animateToolbar")
             if (toolbar != null) {
                 val layoutParams = toolbar.layoutParams
                 val toolbarHeight: Float = layoutParams.height.toFloat()
@@ -62,7 +60,6 @@ class CustomAnimationUtils {
         }
 
         fun getDefaultActionBarHeightInPixels(context: Context): Float {
-            DLog.i(AppConstants.LOG_TAG_MAIN, "getDefaultActionBarHeightInPixels")
             val typedValue = TypedValue()
             val canGetValue = context.theme.resolveAttribute(android.R.attr.actionBarSize, typedValue, true)
             return if (canGetValue) {
