@@ -9,6 +9,9 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SnapHelper
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
 import com.alikazi.codesampleflickr.R
@@ -73,8 +76,6 @@ class MainActivity : AppCompatActivity(),
             mPreviouslySelectedPosition = savedInstanceState.getInt(SAVE_INSTANCE_KEY_SCROLL_POSITION)
             handleOrientationChange()
         }
-
-        // TODO REFRESH MENU BUTTON
     }
 
     private fun startAppCenter() {
@@ -85,7 +86,6 @@ class MainActivity : AppCompatActivity(),
 
     private fun initUi() {
         setSupportActionBar(toolbar)
-//        makeRequest()
         setupRecyclerView()
         showHideEmptyListMessage(true)
     }
@@ -140,21 +140,18 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun makeRequest() {
-        mRequestsProcessor.getProperties()
+        mRequestsProcessor.getFeed()
         recycler_view_empty_text_view.setText(R.string.feed_empty_list_message)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle?) {
-        super.onSaveInstanceState(outState)
-        DLog.i(LOG_TAG, "onSaveInstanceState")
-        outState?.putParcelableArrayList(SAVE_INSTANCE_KEY_FEED, mListItems)
-        outState?.putInt(SAVE_INSTANCE_KEY_SCROLL_POSITION, mPreviouslySelectedPosition)
     }
 
     override fun responseOk(items: Items) {
         DLog.i(LOG_TAG, "responseOk")
         mListItems = items.images
+        mDefaultChildCount = 0
+        mPreviouslySelectedPosition = 0
+        mRecyclerAdapter.setSelectedPositionFromViewPager(0)
         mRecyclerAdapter.setListItems(mListItems)
+        main_recycler_view.smoothScrollToPosition(0)
         instantiateFragment()
         showHideEmptyListMessage(false)
     }
@@ -223,6 +220,39 @@ class MainActivity : AppCompatActivity(),
         mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() -
                 mLayoutManager.findFirstCompletelyVisibleItemPosition()
         DLog.d(LOG_TAG, "mDefaultChildCount + $mDefaultChildCount")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        DLog.i(LOG_TAG, "onSaveInstanceState")
+        outState?.putParcelableArrayList(SAVE_INSTANCE_KEY_FEED, mListItems)
+        outState?.putInt(SAVE_INSTANCE_KEY_SCROLL_POSITION, mPreviouslySelectedPosition)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val menuInflater = MenuInflater(this)
+        menuInflater.inflate(R.menu.menu_refresh, menu)
+        val max: Int = when(menu?.size()) {
+            null -> 0
+            else -> menu.size() - 1
+        }
+        // Android bug: Menu action does not show even though
+        // set to showAsAction="always" in xml
+        for (index: Int in 0..max) {
+            val menuItem = menu?.getItem(index)
+            if (menuItem != null && menuItem.itemId == R.id.action_refresh) {
+                menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+            }
+        }
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean = when(item?.itemId){
+        R.id.action_refresh -> {
+            makeRequest()
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
     }
 
     override fun onStop() {

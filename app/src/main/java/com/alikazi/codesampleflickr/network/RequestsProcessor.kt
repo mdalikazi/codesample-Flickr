@@ -25,7 +25,7 @@ class RequestsProcessor(context: Context, requestResponseListener: RequestRespon
     private var mContext = context
     private var mRequestResponseListener = requestResponseListener
 
-    fun getProperties() {
+    fun getFeed() {
         try {
             val builder = Uri.Builder()
                     .scheme(NetworkConstants.SCHEME_HTTPS)
