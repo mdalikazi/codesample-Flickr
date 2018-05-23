@@ -9,7 +9,6 @@ import com.alikazi.codesampleflickr.R
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.utils.CustomViewUtils
-import com.alikazi.codesampleflickr.utils.DLog
 import kotlinx.android.synthetic.main.item_view_pager.view.*
 
 class ImagePagerAdapter(context: Context, images: ArrayList<ImageItem>?) : PagerAdapter() {
@@ -33,13 +32,13 @@ class ImagePagerAdapter(context: Context, images: ArrayList<ImageItem>?) : Pager
     }
 
     override fun instantiateItem(container: ViewGroup, position: Int) : Any {
-        DLog.i(LOG_TAG, "instantiateItem")
-        var view: View = LayoutInflater.from(mContext).inflate(R.layout.item_view_pager, container, false)
+        val view: View = LayoutInflater.from(mContext).inflate(R.layout.item_view_pager, container, false)
 
         CustomViewUtils.showImageWithGlide(mContext,
                 mImages?.get(position)?.media?.url,
                 view.pager_item_image_view,
-                view.pager_item_progress_bar)
+                view.pager_item_progress_bar,
+                view.pager_item_error_image_view)
 
         container.addView(view)
         return view

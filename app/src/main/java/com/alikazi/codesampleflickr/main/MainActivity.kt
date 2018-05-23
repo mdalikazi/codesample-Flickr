@@ -6,6 +6,8 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SnapHelper
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
@@ -16,6 +18,7 @@ import com.alikazi.codesampleflickr.models.Items
 import com.alikazi.codesampleflickr.network.RequestQueueHelper
 import com.alikazi.codesampleflickr.network.RequestsProcessor
 import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
+import com.alikazi.codesampleflickr.utils.CustomViewUtils
 import com.alikazi.codesampleflickr.utils.DLog
 import com.alikazi.codesampleflickr.utils.LeftSnapHelper
 import com.android.volley.VolleyError
@@ -37,10 +40,13 @@ class MainActivity : AppCompatActivity(),
         private const val SAVE_INSTANCE_KEY_FEED = "SAVE_INSTANCE_KEY_FEED"
     }
 
-    private var mDetailsFragment: DetailsFragment = DetailsFragment()
-    private var mRecyclerAdapter: RecyclerAdapter? = null
-    private var mRequestsProcessor: RequestsProcessor? = null
+    private var mMeasuredWithPx = 0
+    private var mDefaultChildCount = 0
     private var mListItems: ArrayList<ImageItem>? = ArrayList()
+    private var mDetailsFragment: DetailsFragment = DetailsFragment()
+    private var mRecyclerAdapter: RecyclerAdapter = RecyclerAdapter(this)
+    private var mLayoutManager: LinearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+    private var mRequestsProcessor: RequestsProcessor = RequestsProcessor(this, this)
 
     private val isNetworkConnected: Boolean
         get() {
@@ -56,13 +62,11 @@ class MainActivity : AppCompatActivity(),
         setContentView(R.layout.activity_main)
         startAppCenter()
         initUi()
-        instantiateFragment()
-
-        mRequestsProcessor = RequestsProcessor(this, this)
 
         if (savedInstanceState == null) {
             DLog.i(LOG_TAG,"savedInstanceState == null")
             // Fresh launch
+            instantiateFragment()
             CustomAnimationUtils.animateToolbar(this, toolbar, this)
         } else {
             // Orientation changed
@@ -87,28 +91,38 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun setupRecyclerView() {
-        mRecyclerAdapter = RecyclerAdapter(this)
+        main_recycler_view.layoutManager = mLayoutManager
         main_recycler_view.adapter = mRecyclerAdapter
-        var snapHelper: SnapHelper = LeftSnapHelper()
+        val snapHelper: SnapHelper = LeftSnapHelper()
         snapHelper.attachToRecyclerView(main_recycler_view)
+        main_recycler_view.setItemViewCacheSize(0)
+        main_recycler_view.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                mRecyclerAdapter.setItemsClickable(newState == RecyclerView.SCROLL_STATE_IDLE)
+            }
+        })
     }
 
     private fun instantiateFragment() {
         supportFragmentManager
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .replace(R.id.detail_view_container, mDetailsFragment)
+                .add(R.id.detail_view_container, mDetailsFragment)
                 .commit()
 
-        mRecyclerAdapter?.setRecyclerItemClickListener(mDetailsFragment)
+        mRecyclerAdapter.setRecyclerItemClickListener(mDetailsFragment)
+        mDetailsFragment.setImageChangeListener(this)
     }
 
     private fun handleOrientationChange() {
         DLog.i(LOG_TAG, "handleOrientationChange")
+        // Toolbar should not re-animate on orientation change
         val layoutParams = toolbar.layoutParams
         layoutParams?.height = CustomAnimationUtils.getDefaultActionBarHeightInPixels(this).toInt()
+        mDetailsFragment = DetailsFragment()
+        instantiateFragment()
+        mRecyclerAdapter.setListItems(mListItems)
         main_swipe_refresh_layout.isRefreshing = false
-        mRecyclerAdapter?.setListItems(mListItems)
         showHideEmptyListMessage(false)
     }
 
@@ -120,11 +134,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun makeRequest() {
-        if (mRequestsProcessor != null) {
-            mRequestsProcessor?.getProperties()
-            main_swipe_refresh_layout.isRefreshing = true
-            recycler_view_empty_text_view.setText(R.string.feed_empty_list_message)
-        }
+        mRequestsProcessor.getProperties()
+        main_swipe_refresh_layout.isRefreshing = true
+        recycler_view_empty_text_view.setText(R.string.feed_empty_list_message)
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -136,9 +148,8 @@ class MainActivity : AppCompatActivity(),
     override fun responseOk(items: Items) {
         DLog.i(LOG_TAG, "responseOk")
         mListItems = items.images
-        mRecyclerAdapter?.setListItems(mListItems)
-        mDetailsFragment?.setPagerItems(mListItems)
-        mDetailsFragment?.setImageChangeListener(this)
+        mRecyclerAdapter.setListItems(mListItems)
+        mDetailsFragment.setPagerItems(mListItems)
         main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
@@ -164,10 +175,57 @@ class MainActivity : AppCompatActivity(),
         main_recycler_view.visibility = if (showMessage) View.GONE else View.VISIBLE
     }
 
-    override fun onPageSelected(position: Int) {
-        DLog.i(LOG_TAG, "onPageSelected: $position")
-        main_recycler_view.smoothScrollToPosition(position)
-        mRecyclerAdapter?.setSelectedPositionFromViewPager(position)
+    override fun onPageSelected(position: Int, diff: Int, comingFromRecyclerItemClick: Boolean) {
+        if (mMeasuredWithPx <= 0) {
+            calculateScrollByXForOneChild()
+        }
+        if (mDefaultChildCount == 0) {
+            getDefaultNumberOfVisibleViews()
+        }
+
+        /**
+         * If diff < 0 then user scrolled to the right (position increased)
+         * If diff > 0 then user scrolled to the left (position decreased)
+         *
+         * If diff > 0 && comingFromRecyclerItemClick then...
+         * ...user scrolled to the left but tapped on a recycler item
+         *
+         * If diff > 0 && !comingFromRecyclerItemClick then...
+         * ...user scrolled to the left but by swiping left on the ViewPager
+         */
+        if (diff < 0 || (diff > 0 && comingFromRecyclerItemClick)) {
+            val scrollToPosition = position + mDefaultChildCount
+            DLog.d(LOG_TAG, "scrollToPosition: $scrollToPosition")
+            // Prevent IndexOutOfBoundsException
+            if (scrollToPosition < mLayoutManager.itemCount) {
+                main_recycler_view.smoothScrollToPosition(scrollToPosition)
+            }
+        } else if (diff > 0 && !comingFromRecyclerItemClick) {
+            main_recycler_view.smoothScrollToPosition(position)
+        }
+
+        mRecyclerAdapter.setItemsClickable(main_recycler_view.scrollState == RecyclerView.SCROLL_STATE_IDLE)
+        mRecyclerAdapter.setSelectedPositionFromViewPager(position)
+    }
+
+    /**
+     * This gives how many items of recycler view are visible to the user.
+     * We calculate this only once to prevent extra calculation and the methods used
+     * are not reliable due to the nature of how RecyclerView recycles views
+     */
+    private fun getDefaultNumberOfVisibleViews() {
+        mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() -
+                mLayoutManager.findFirstCompletelyVisibleItemPosition()
+        DLog.d(LOG_TAG, "mDefaultChildCount + $mDefaultChildCount")
+    }
+
+    /**
+     * Taking measuredWidth of only the first child is enough
+     * because in our case all children are the same size
+     */
+    private fun calculateScrollByXForOneChild() {
+        val measuredWidth = main_recycler_view.getChildAt(0).measuredWidth
+        mMeasuredWithPx = CustomViewUtils.getComplexUnitPx(this, measuredWidth.toFloat()).toInt()
     }
 
     override fun onStop() {
