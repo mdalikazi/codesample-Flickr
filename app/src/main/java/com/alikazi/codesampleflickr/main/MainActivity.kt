@@ -12,6 +12,7 @@ import android.support.v7.widget.SnapHelper
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
 import com.alikazi.codesampleflickr.R
+import com.alikazi.codesampleflickr.R.id.*
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.models.Items
@@ -96,7 +97,6 @@ class MainActivity : AppCompatActivity(),
         val snapHelper: SnapHelper = LeftSnapHelper()
         snapHelper.attachToRecyclerView(main_recycler_view)
         main_recycler_view.setItemViewCacheSize(0)
-        getDefaultNumberOfVisibleViews()
         main_recycler_view.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
                 mRecyclerAdapter.setItemsClickable(newState == RecyclerView.SCROLL_STATE_IDLE)
@@ -177,24 +177,9 @@ class MainActivity : AppCompatActivity(),
         if (mMeasuredWithPx <= 0) {
             calculateScrollByXForOneChild()
         }
-        /*if (mDefaultChildCount <= 0) {
-            abc()
-        }*/
-
-        /*View visibleChild = recyclerView.getChildAt(0);
-        int positionOfChild = recyclerView.getChildAdapterPosition(visibleChild)*/
-
-        /*for (i in 1 until mLayoutManager.childCount) {
-            var view: View? = mLayoutManager.getChildAt(i)
-            if (view != null && view.tag == position) {
-                DLog.w(LOG_TAG, "view != null && view.tag == position: " + i)
-                DLog.w(LOG_TAG, "mLayoutManager.isViewPartiallyVisible(): " +
-                        mLayoutManager.isViewPartiallyVisible(view, true, false))
-                var scrollByX = mMeasuredWithPx.times(i)
-//                main_recycler_view.scrollBy(scrollByX, 0)
-                mRecyclerAdapter.setItemsClickable(main_recycler_view.scrollState == RecyclerView.SCROLL_STATE_IDLE)
-            }
-        }*/
+        if (mDefaultChildCount == 0) {
+            getDefaultNumberOfVisibleViews()
+        }
         var scrollToPosition = position + mDefaultChildCount
         DLog.d(LOG_TAG, "scrollToPosition " + scrollToPosition)
         if (scrollToPosition < mLayoutManager.itemCount) {

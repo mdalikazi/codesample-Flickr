@@ -35,11 +35,12 @@ class DetailsFragment : Fragment(),
     private var mImageChangeListener: OnViewPagerImageChangeListener? = null
 
     fun setPagerItems(images: ArrayList<ImageItem>?) {
+        mImages?.clear()
         mImages = images
         if (images != null && !images.isEmpty()) {
             mEmptyTextView?.visibility = View.GONE
+            setupViewPager()
         }
-        setupViewPager()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
