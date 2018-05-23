@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBlack">
+
+    <ImageView
+        android:id="@+id/pager_item_image_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <CheckBox
+        android:id="@+id/pager_item_heart_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="16dp"
+        android:button="@drawable/heart_checkbox"
+        android:checked="false"/>
+
+    <ProgressBar
+        android:id="@+id/pager_item_progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
+    <ImageView
+        android:id="@+id/pager_item_error_image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_error"
+        android:tint="@color/colorFavorite"
+        android:alpha="0.7"
+        android:visibility="gone"/>
+
+</RelativeLayout>
