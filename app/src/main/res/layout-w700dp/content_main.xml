@@ -26,8 +26,6 @@
                 android:orientation="vertical"
                 tools:listitem="@layout/item_recycler_view" />
 
-            <!--app:layoutManager="android.support.v7.widget.LinearLayoutManager"-->
-
             <TextView
                 android:id="@+id/recycler_view_empty_text_view"
                 style="@style/EmptyMessageStyle"

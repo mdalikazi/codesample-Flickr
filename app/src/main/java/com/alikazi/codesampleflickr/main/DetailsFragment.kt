@@ -21,6 +21,7 @@ class DetailsFragment : Fragment(),
 
     companion object {
         private const val LOG_TAG = AppConstants.LOG_TAG_MAIN
+        private const val SAVE_INSTANCE_KEY_PAGER_ITEMS = "SAVE_INSTANCE_KEY_PAGER_ITEMS"
     }
 
     fun setImageChangeListener(listener: OnViewPagerImageChangeListener) {
@@ -35,25 +36,37 @@ class DetailsFragment : Fragment(),
     private var mImageChangeListener: OnViewPagerImageChangeListener? = null
 
     fun setPagerItems(images: ArrayList<ImageItem>?) {
+        DLog.i(LOG_TAG, "setPagerItems")
         mImages?.clear()
         mImages = images
         if (images != null && !images.isEmpty()) {
             mEmptyTextView?.visibility = View.GONE
-            setupViewPager()
+            mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
         }
     }
+
+    /*override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelableArrayList(SAVE_INSTANCE_KEY_PAGER_ITEMS, mImages)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        mImages = savedInstanceState?.getParcelableArrayList(SAVE_INSTANCE_KEY_PAGER_ITEMS)
+        mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
+    }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         DLog.i(LOG_TAG, "onCreateView")
         val view = inflater.inflate(R.layout.content_detail, container, false)
         mViewPager = view.view_pager
         mEmptyTextView = view.view_pager_empty_text_view
+        setupViewPager()
         return view
     }
 
     private fun setupViewPager() {
         DLog.i(LOG_TAG, "setupViewPager")
-        mViewPager?.offscreenPageLimit = 0
         mViewPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
 
@@ -71,15 +84,14 @@ class DetailsFragment : Fragment(),
                     // If mDiff > 0 then user scrolled to the left (position decreased)
                     // If mDiff == 0 user started scrolling but did not finish -> dont do anything
                     if (mDiff != 0) {
-                        mImageChangeListener?.onPageSelected(mSelectedPosition, mDiff)
-                        // Reset mDiff in case user does not fully scroll the next time
-                        // in which case mDiff would carry the previous value and trigger onPageSelected
+                        mImageChangeListener?.onPageSelected(mSelectedPosition)
+                        // Reset mDiff in case user does not fully scroll the page next time
+                        // in which case mDiff would carry the previous value and wrongly trigger onPageSelected
                         mDiff = 0
                     }
                 }
             }
         })
-        mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
     }
 
     override fun onRecyclerItemClick(position: Int) {
@@ -89,6 +101,6 @@ class DetailsFragment : Fragment(),
     }
 
     interface OnViewPagerImageChangeListener {
-        fun onPageSelected(position: Int, diff: Int)
+        fun onPageSelected(position: Int)
     }
 }

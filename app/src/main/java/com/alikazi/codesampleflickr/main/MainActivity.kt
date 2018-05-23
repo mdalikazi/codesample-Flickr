@@ -12,7 +12,6 @@ import android.support.v7.widget.SnapHelper
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
 import com.alikazi.codesampleflickr.R
-import com.alikazi.codesampleflickr.R.id.*
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.models.Items
@@ -63,11 +62,11 @@ class MainActivity : AppCompatActivity(),
         setContentView(R.layout.activity_main)
         startAppCenter()
         initUi()
-        instantiateFragment()
 
         if (savedInstanceState == null) {
             DLog.i(LOG_TAG,"savedInstanceState == null")
             // Fresh launch
+            instantiateFragment()
             CustomAnimationUtils.animateToolbar(this, toolbar, this)
         } else {
             // Orientation changed
@@ -108,18 +107,22 @@ class MainActivity : AppCompatActivity(),
         supportFragmentManager
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .replace(R.id.detail_view_container, mDetailsFragment)
+                .add(R.id.detail_view_container, mDetailsFragment)
                 .commit()
 
         mRecyclerAdapter.setRecyclerItemClickListener(mDetailsFragment)
+        mDetailsFragment.setImageChangeListener(this)
     }
 
     private fun handleOrientationChange() {
         DLog.i(LOG_TAG, "handleOrientationChange")
+        // Toolbar should not re-animate on orientation change
         val layoutParams = toolbar.layoutParams
         layoutParams?.height = CustomAnimationUtils.getDefaultActionBarHeightInPixels(this).toInt()
-        main_swipe_refresh_layout.isRefreshing = false
+        mDetailsFragment = DetailsFragment()
+        instantiateFragment()
         mRecyclerAdapter.setListItems(mListItems)
+        main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
 
@@ -147,7 +150,6 @@ class MainActivity : AppCompatActivity(),
         mListItems = items.images
         mRecyclerAdapter.setListItems(mListItems)
         mDetailsFragment.setPagerItems(mListItems)
-        mDetailsFragment.setImageChangeListener(this)
         main_swipe_refresh_layout.isRefreshing = false
         showHideEmptyListMessage(false)
     }
@@ -173,15 +175,17 @@ class MainActivity : AppCompatActivity(),
         main_recycler_view.visibility = if (showMessage) View.GONE else View.VISIBLE
     }
 
-    override fun onPageSelected(position: Int, diff: Int) {
+    override fun onPageSelected(position: Int) {
         if (mMeasuredWithPx <= 0) {
             calculateScrollByXForOneChild()
         }
         if (mDefaultChildCount == 0) {
             getDefaultNumberOfVisibleViews()
         }
-        var scrollToPosition = position + mDefaultChildCount
-        DLog.d(LOG_TAG, "scrollToPosition " + scrollToPosition)
+
+        val scrollToPosition = position + mDefaultChildCount
+        DLog.d(LOG_TAG, "scrollToPosition: $scrollToPosition")
+        // Prevent IndexOutOfBoundsException
         if (scrollToPosition < mLayoutManager.itemCount) {
             main_recycler_view.smoothScrollToPosition(scrollToPosition)
         }
@@ -189,14 +193,21 @@ class MainActivity : AppCompatActivity(),
         mRecyclerAdapter.setSelectedPositionFromViewPager(position)
     }
 
+    /**
+     * This gives how many items of recycler view are visible to the user.
+     * We calculate this only once to prevent extra calculation and the methods used
+     * are not reliable due to the nature of how RecyclerView recycles views
+     */
     private fun getDefaultNumberOfVisibleViews() {
         mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() - mLayoutManager.findFirstCompletelyVisibleItemPosition()
-        DLog.w(LOG_TAG, "mDefaultChildCount " + mDefaultChildCount)
+        DLog.d(LOG_TAG, "mDefaultChildCount + $mDefaultChildCount")
     }
 
+    /**
+     * Taking measuredWidth of only the first child is enough
+     * because in our case all children are the same size
+     */
     private fun calculateScrollByXForOneChild() {
-        // Taking measuredWidth of only the first child is enough
-        // because in our case all children are the same size
         val measuredWidth = main_recycler_view.getChildAt(0).measuredWidth
         mMeasuredWithPx = CustomViewUtils.getComplexUnitPx(this, measuredWidth.toFloat()).toInt()
     }
