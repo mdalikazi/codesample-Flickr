@@ -37,7 +37,8 @@ class ImagePagerAdapter(context: Context, images: ArrayList<ImageItem>?) : Pager
         CustomViewUtils.showImageWithGlide(mContext,
                 mImages?.get(position)?.media?.url,
                 view.pager_item_image_view,
-                view.pager_item_progress_bar)
+                view.pager_item_progress_bar,
+                view.pager_item_error_image_view)
 
         container.addView(view)
         return view

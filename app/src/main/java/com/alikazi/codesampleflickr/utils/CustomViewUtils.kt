@@ -35,7 +35,11 @@ class CustomViewUtils {
             return drawable
         }
 
-        fun showImageWithGlide(context: Context, @Nullable url: String?, @NotNull imageView: ImageView, @Nullable progressBar: ProgressBar?) {
+        fun showImageWithGlide(context: Context,
+                               @Nullable url: String?,
+                               @NotNull imageView: ImageView,
+                               @Nullable progressBar: ProgressBar?,
+                               @Nullable errorImageView: ImageView?) {
             Glide.with(context)
                     .load(url)
                     .transition(DrawableTransitionOptions().crossFade())
@@ -43,12 +47,13 @@ class CustomViewUtils {
                     .listener(object : RequestListener<Drawable> {
                         override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
                             progressBar?.visibility = View.GONE
-                            imageView.setImageDrawable(CustomViewUtils.getTintedIconWithColor(context, R.drawable.ic_error, R.color.colorFavorite))
+                            errorImageView?.visibility = View.VISIBLE
                             return false
                         }
 
                         override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
                             progressBar?.visibility = View.GONE
+                            errorImageView?.visibility = View.GONE
                             return false
                         }
                     })

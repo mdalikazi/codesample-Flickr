@@ -30,6 +30,7 @@ class DetailsFragment : Fragment(),
 
     private var mSelectedPosition = 0
     private var mDiff = 0
+    private var mComingFromRecyclerItemClick = false
     private var mViewPager: ViewPager? = null
     private var mEmptyTextView: TextView? = null
     private var mImages: ArrayList<ImageItem>? = ArrayList()
@@ -80,14 +81,13 @@ class DetailsFragment : Fragment(),
 
             override fun onPageScrollStateChanged(state: Int) {
                 if (state == ViewPager.SCROLL_STATE_IDLE) {
-                    // If mDiff < 0 then user scrolled to the right (position increased)
-                    // If mDiff > 0 then user scrolled to the left (position decreased)
                     // If mDiff == 0 user started scrolling but did not finish -> dont do anything
                     if (mDiff != 0) {
-                        mImageChangeListener?.onPageSelected(mSelectedPosition)
+                        mImageChangeListener?.onPageSelected(mSelectedPosition, mDiff, mComingFromRecyclerItemClick)
                         // Reset mDiff in case user does not fully scroll the page next time
                         // in which case mDiff would carry the previous value and wrongly trigger onPageSelected
                         mDiff = 0
+                        mComingFromRecyclerItemClick = false
                     }
                 }
             }
@@ -97,10 +97,10 @@ class DetailsFragment : Fragment(),
     override fun onRecyclerItemClick(position: Int) {
         DLog.i(LOG_TAG, "onRecyclerItemClick")
         mViewPager?.setCurrentItem(position, true)
-
+        mComingFromRecyclerItemClick = true
     }
 
     interface OnViewPagerImageChangeListener {
-        fun onPageSelected(position: Int)
+        fun onPageSelected(position: Int, diff: Int, comingFromRecyclerItemClick: Boolean)
     }
 }

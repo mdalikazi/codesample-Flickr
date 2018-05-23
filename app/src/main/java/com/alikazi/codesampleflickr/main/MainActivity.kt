@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity(),
         main_recycler_view.visibility = if (showMessage) View.GONE else View.VISIBLE
     }
 
-    override fun onPageSelected(position: Int) {
+    override fun onPageSelected(position: Int, diff: Int, comingFromRecyclerItemClick: Boolean) {
         if (mMeasuredWithPx <= 0) {
             calculateScrollByXForOneChild()
         }
@@ -183,12 +183,27 @@ class MainActivity : AppCompatActivity(),
             getDefaultNumberOfVisibleViews()
         }
 
-        val scrollToPosition = position + mDefaultChildCount
-        DLog.d(LOG_TAG, "scrollToPosition: $scrollToPosition")
-        // Prevent IndexOutOfBoundsException
-        if (scrollToPosition < mLayoutManager.itemCount) {
-            main_recycler_view.smoothScrollToPosition(scrollToPosition)
+        /**
+         * If diff < 0 then user scrolled to the right (position increased)
+         * If diff > 0 then user scrolled to the left (position decreased)
+         *
+         * If diff > 0 && comingFromRecyclerItemClick then...
+         * ...user scrolled to the left but tapped on a recycler item
+         *
+         * If diff > 0 && !comingFromRecyclerItemClick then...
+         * ...user scrolled to the left but by swiping left on the ViewPager
+         */
+        if (diff < 0 || (diff > 0 && comingFromRecyclerItemClick)) {
+            val scrollToPosition = position + mDefaultChildCount
+            DLog.d(LOG_TAG, "scrollToPosition: $scrollToPosition")
+            // Prevent IndexOutOfBoundsException
+            if (scrollToPosition < mLayoutManager.itemCount) {
+                main_recycler_view.smoothScrollToPosition(scrollToPosition)
+            }
+        } else if (diff > 0 && !comingFromRecyclerItemClick) {
+            main_recycler_view.smoothScrollToPosition(position)
         }
+
         mRecyclerAdapter.setItemsClickable(main_recycler_view.scrollState == RecyclerView.SCROLL_STATE_IDLE)
         mRecyclerAdapter.setSelectedPositionFromViewPager(position)
     }
@@ -199,7 +214,8 @@ class MainActivity : AppCompatActivity(),
      * are not reliable due to the nature of how RecyclerView recycles views
      */
     private fun getDefaultNumberOfVisibleViews() {
-        mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() - mLayoutManager.findFirstCompletelyVisibleItemPosition()
+        mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() -
+                mLayoutManager.findFirstCompletelyVisibleItemPosition()
         DLog.d(LOG_TAG, "mDefaultChildCount + $mDefaultChildCount")
     }
 

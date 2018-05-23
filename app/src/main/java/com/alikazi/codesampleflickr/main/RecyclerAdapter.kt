@@ -106,7 +106,8 @@ class RecyclerAdapter(context: Context) :
                 CustomViewUtils.showImageWithGlide(mContext,
                         image?.media?.url,
                         viewHolder.imageView,
-                        viewHolder.progressBar)
+                        viewHolder.progressBar,
+                        viewHolder.errorImageView)
             }
         }
     }
@@ -124,6 +125,7 @@ class RecyclerAdapter(context: Context) :
     private class ImageItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var imageView: ImageView = itemView.findViewById(R.id.recycler_item_image_view)
         var progressBar: ProgressBar = itemView.findViewById(R.id.recycler_item_progress_bar)
+        var errorImageView: ImageView = itemView.findViewById(R.id.recycler_item_error_image_view)
     }
 
     interface RecyclerItemClickListener {
