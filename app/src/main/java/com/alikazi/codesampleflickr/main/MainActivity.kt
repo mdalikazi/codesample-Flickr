@@ -50,13 +50,6 @@ class MainActivity : AppCompatActivity(),
     private var mLayoutManager: LinearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     private var mRequestsProcessor: RequestsProcessor = RequestsProcessor(this, this)
 
-    private val isNetworkConnected: Boolean
-        get() {
-            val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val networkInfo = connectivityManager.activeNetworkInfo
-            return networkInfo != null && networkInfo.isConnectedOrConnecting
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         DLog.i(LOG_TAG, "onCreate")
@@ -103,10 +96,23 @@ class MainActivity : AppCompatActivity(),
         })
     }
 
+    private fun resetSomeValuesToDefault(userClickedRefresh: Boolean) {
+        if (userClickedRefresh) {
+            mPreviouslySelectedPosition = 0
+            main_recycler_view.smoothScrollToPosition(0)
+        }
+        instantiateFragment()
+        mDefaultChildCount = 0
+        mRecyclerAdapter.setSelectedPositionFromViewPager(mPreviouslySelectedPosition)
+        mRecyclerAdapter.setListItems(mListItems)
+        showHideEmptyListMessage(false)
+    }
+
     private fun instantiateFragment() {
         val fragment = DetailsFragment().apply {
             arguments = Bundle().apply {
                 putParcelableArrayList(DetailsFragment.INTENT_EXTRA_PAGER_ITEMS, mListItems)
+                putInt(DetailsFragment.INTENT_EXTRA_PREVIOUSLY_SELECTED_POSITION, mPreviouslySelectedPosition)
             }
          }
 
@@ -125,11 +131,7 @@ class MainActivity : AppCompatActivity(),
         // Toolbar should not re-animate on orientation change
         val layoutParams = toolbar.layoutParams
         layoutParams?.height = CustomAnimationUtils.getDefaultActionBarHeightInPixels(this).toInt()
-        instantiateFragment()
-        mDefaultChildCount = 0
-        mRecyclerAdapter.setListItems(mListItems)
-        mRecyclerAdapter.setSelectedPositionFromViewPager(mPreviouslySelectedPosition)
-        showHideEmptyListMessage(false)
+        resetSomeValuesToDefault(false)
     }
 
     override fun onToolbarAnimationEnd() {
@@ -140,26 +142,29 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun makeRequest() {
-        mRequestsProcessor.getFeed()
+        if (checkNetwork()) {
+            mRequestsProcessor.getFeed()
+        } else {
+            showSnackbar()
+        }
         recycler_view_empty_text_view.setText(R.string.feed_empty_list_message)
     }
 
     override fun responseOk(items: Items) {
         DLog.i(LOG_TAG, "responseOk")
         mListItems = items.images
-        mDefaultChildCount = 0
-        mPreviouslySelectedPosition = 0
-        mRecyclerAdapter.setSelectedPositionFromViewPager(0)
-        mRecyclerAdapter.setListItems(mListItems)
-        main_recycler_view.smoothScrollToPosition(0)
-        instantiateFragment()
-        showHideEmptyListMessage(false)
+        resetSomeValuesToDefault(true)
     }
 
     override fun responseError(error: VolleyError) {
         DLog.i(LOG_TAG, "responseError: " + error.toString())
         recycler_view_empty_text_view.setText(R.string.feed_empty_list_error_message)
-        val snackbarMessage = when(isNetworkConnected) {
+        showSnackbar()
+        showHideEmptyListMessage(true)
+    }
+
+    private fun showSnackbar() {
+        val snackbarMessage = when(checkNetwork()) {
             true -> getString(R.string.snackbar_feed_load_error)
             false -> getString(R.string.snackbar_network_error_message)
         }
@@ -167,8 +172,6 @@ class MainActivity : AppCompatActivity(),
         Snackbar.make(main_recycler_view, snackbarMessage, Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.refresh, { makeRequest() })
                 .show()
-
-        showHideEmptyListMessage(true)
     }
 
     private fun showHideEmptyListMessage(showMessage: Boolean) {
@@ -180,7 +183,6 @@ class MainActivity : AppCompatActivity(),
         if (mDefaultChildCount == 0) {
             getDefaultNumberOfVisibleViews()
         }
-
         /**
          * If diff < 0 then user scrolled to the right (position increased)
          * If diff > 0 then user scrolled to the left (position decreased)
@@ -219,7 +221,23 @@ class MainActivity : AppCompatActivity(),
     private fun getDefaultNumberOfVisibleViews() {
         mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() -
                 mLayoutManager.findFirstCompletelyVisibleItemPosition()
-        DLog.d(LOG_TAG, "mDefaultChildCount + $mDefaultChildCount")
+
+        if (mLayoutManager.findLastCompletelyVisibleItemPosition() !=
+                mLayoutManager.findLastVisibleItemPosition()) {
+            val lastChild: View? = mLayoutManager.getChildAt(mLayoutManager.findLastVisibleItemPosition())
+            if (lastChild != null) {
+                val shouldIncludeLastChild =
+                        mLayoutManager.getDecoratedRight(lastChild) > 0 &&
+                        mLayoutManager.getDecoratedRight(lastChild) >=
+                        mLayoutManager.getDecoratedMeasuredWidth(lastChild) / 2
+                if (shouldIncludeLastChild) {
+                    DLog.i(LOG_TAG, "shouldIncludeLastChild: $shouldIncludeLastChild")
+                    ++mDefaultChildCount
+                }
+            }
+        }
+
+        DLog.w(LOG_TAG, "mDefaultChildCount: $mDefaultChildCount")
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
@@ -253,6 +271,13 @@ class MainActivity : AppCompatActivity(),
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun checkNetwork(): Boolean {
+        DLog.i(LOG_TAG, "checkNetwork")
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isAvailable && networkInfo.isConnectedOrConnecting
     }
 
     override fun onStop() {
