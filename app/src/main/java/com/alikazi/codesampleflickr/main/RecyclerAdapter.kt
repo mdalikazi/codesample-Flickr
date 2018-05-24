@@ -61,6 +61,7 @@ class RecyclerAdapter(context: Context) :
     fun setItemsClickable(clickable: Boolean) {
         mClickable = clickable
     }
+
     /**
      * Animation should happen only once at the start
      */
@@ -85,6 +86,7 @@ class RecyclerAdapter(context: Context) :
         }
         val adapterPosition = holder.adapterPosition
         val image: ImageItem? = mListItems?.get(adapterPosition)
+        holder.itemView.tag = adapterPosition
         holder.itemView.isSelected = (adapterPosition == mSelectedItemPosition)
         holder.itemView.setOnClickListener({
             if (mClickable) {
