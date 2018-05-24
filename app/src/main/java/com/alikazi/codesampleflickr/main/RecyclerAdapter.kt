@@ -38,7 +38,7 @@ class RecyclerAdapter(context: Context) :
         mListItems?.clear()
         notifyDataSetChanged()
         mListItems = listItems
-        mAnimate = true
+//        mAnimate = true
         notifyDataSetChanged()
     }
 

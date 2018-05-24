@@ -2,6 +2,7 @@ package com.alikazi.codesampleflickr.main
 
 import android.app.FragmentTransaction
 import android.content.Context
+import android.graphics.Rect
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -15,6 +16,8 @@ import android.view.MenuItem
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
 import com.alikazi.codesampleflickr.R
+import com.alikazi.codesampleflickr.R.id.main_recycler_view
+import com.alikazi.codesampleflickr.R.id.recycler_view_empty_text_view
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.models.Items
@@ -222,14 +225,18 @@ class MainActivity : AppCompatActivity(),
         mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() -
                 mLayoutManager.findFirstCompletelyVisibleItemPosition()
 
-        if (mLayoutManager.findLastCompletelyVisibleItemPosition() !=
-                mLayoutManager.findLastVisibleItemPosition()) {
-            val lastChild: View? = mLayoutManager.getChildAt(mLayoutManager.findLastVisibleItemPosition())
-            if (lastChild != null) {
+        for (index in 0 until mLayoutManager.childCount) {
+            // Find last visible child that is not null
+            var lastChild: View? = mLayoutManager.getChildAt(index)
+            if (index == mDefaultChildCount + 1 && lastChild != null) {
+                // Get the visible portion of the last visible child
+                val rect = Rect()
+                lastChild.getGlobalVisibleRect(rect)
+
+                // If last child is more than 50% visible then it is a good idea to scroll 1 child extra
+                // to make sure that the left-est child in recycler view is the highlighted one
                 val shouldIncludeLastChild =
-                        mLayoutManager.getDecoratedRight(lastChild) > 0 &&
-                        mLayoutManager.getDecoratedRight(lastChild) >=
-                        mLayoutManager.getDecoratedMeasuredWidth(lastChild) / 2
+                        rect.width() >= mLayoutManager.getDecoratedMeasuredWidth(lastChild) / 2
                 if (shouldIncludeLastChild) {
                     DLog.i(LOG_TAG, "shouldIncludeLastChild: $shouldIncludeLastChild")
                     ++mDefaultChildCount
