@@ -85,7 +85,6 @@ class RecyclerAdapter(context: Context) :
         }
         val adapterPosition = holder.adapterPosition
         val image: ImageItem? = mListItems?.get(adapterPosition)
-        holder.itemView.tag = adapterPosition // Used to identify view to calculate scroll in MainActivity
         holder.itemView.isSelected = (adapterPosition == mSelectedItemPosition)
         holder.itemView.setOnClickListener({
             if (mClickable) {
