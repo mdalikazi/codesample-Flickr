@@ -184,27 +184,39 @@ class MainActivity : AppCompatActivity(),
         if (mDefaultChildCount == 0) {
             getDefaultNumberOfVisibleViews()
         }
+
         /**
-         * If diff < 0 then user scrolled to the right (position increased)
-         * If diff > 0 then user scrolled to the left (position decreased)
-         *
-         * If diff > 0 && comingFromRecyclerItemClick then...
-         * ...user scrolled to the left but tapped on a recycler item
-         *
-         * If diff > 0 && !comingFromRecyclerItemClick then...
-         * ...user scrolled to the left but by swiping left on the ViewPager
+         * Conditions:
+         * A: Scroll right on RecyclerView then click recycler item
+         * B: Scroll left on RecyclerView then click recycler item
+         * C: Dont scroll then click recycler item
+         * D: Scroll right on RecyclerView then swipe ViewPager right
+         * E: Scroll right then swipe ViewPager left
+         * F: Scroll left then swipe ViewPager right
+         * G: Scroll left then swipe ViewPager left
          */
-        if (diff < 0 || (diff > 0 && comingFromRecyclerItemClick)) {
-            val scrollToPosition = position + mDefaultChildCount
-            DLog.d(LOG_TAG, "scrollToPosition: $scrollToPosition")
-            // Prevent IndexOutOfBoundsException
-            if (scrollToPosition < mLayoutManager.itemCount) {
-                main_recycler_view.smoothScrollToPosition(scrollToPosition)
+        var scrollToPosition = 0
+        if (comingFromRecyclerItemClick) {
+            // A, B, C
+            scrollToPosition = position + mDefaultChildCount
+            DLog.d(LOG_TAG, "Conditions A, B, C")
+        } else if (Math.abs(diff) == 1) {
+            for (index in 0 until mLayoutManager.childCount) {
+                // Find last visible child that is not null
+                val child: View? = mLayoutManager.getChildAt(index)
+                if (position >= child?.tag.toString().toInt()) {
+                    scrollToPosition = position + mDefaultChildCount
+                    DLog.d(LOG_TAG, "Conditions F, G")
+                    break
+                } else {
+                    scrollToPosition = position
+                    DLog.d(LOG_TAG, "Conditions D, E")
+                }
             }
-        } else if (diff > 0 && !comingFromRecyclerItemClick) {
-            main_recycler_view.smoothScrollToPosition(position)
         }
 
+        main_recycler_view.smoothScrollToPosition(scrollToPosition)
+        DLog.d(LOG_TAG, "scrollToPosition: $scrollToPosition")
         mRecyclerAdapter.setItemsClickable(main_recycler_view.scrollState == RecyclerView.SCROLL_STATE_IDLE)
         mRecyclerAdapter.setSelectedPositionFromViewPager(position)
         mPreviouslySelectedPosition = position
