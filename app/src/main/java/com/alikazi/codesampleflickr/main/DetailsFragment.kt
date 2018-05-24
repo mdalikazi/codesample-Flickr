@@ -22,6 +22,7 @@ class DetailsFragment : Fragment(),
     companion object {
         private const val LOG_TAG = AppConstants.LOG_TAG_MAIN
         const val INTENT_EXTRA_PAGER_ITEMS = "INTENT_EXTRA_PAGER_ITEMS"
+        const val INTENT_EXTRA_PREVIOUSLY_SELECTED_POSITION = "INTENT_EXTRA_PREVIOUSLY_SELECTED_POSITION"
     }
 
     fun setImageChangeListener(listener: OnViewPagerImageChangeListener) {
@@ -32,9 +33,9 @@ class DetailsFragment : Fragment(),
     private var mDiff = 0
     private var mComingFromRecyclerItemClick = false
     private var mViewPager: ViewPager? = null
-    private var mEmptyTextView: TextView? = null
     private var mImages: ArrayList<ImageItem>? = ArrayList()
     private var mImageChangeListener: OnViewPagerImageChangeListener? = null
+    private var mEmptyTextView: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,22 +46,31 @@ class DetailsFragment : Fragment(),
                 mImages = it.getParcelableArrayList(INTENT_EXTRA_PAGER_ITEMS)
                 DLog.d(LOG_TAG, "mImages != null. size: ${mImages?.size}")
             }
+            if (it.containsKey(INTENT_EXTRA_PREVIOUSLY_SELECTED_POSITION)) {
+                mSelectedPosition = it.getInt(INTENT_EXTRA_PREVIOUSLY_SELECTED_POSITION)
+                DLog.d(LOG_TAG, "mSelectedPosition: $mSelectedPosition")
+            }
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         DLog.i(LOG_TAG, "onCreateView")
         val view = inflater.inflate(R.layout.content_detail, container, false)
-        mViewPager = view.view_pager
         mEmptyTextView = view.view_pager_empty_text_view
+        mViewPager = view.view_pager
         setupViewPager()
         return view
     }
 
     private fun setupViewPager() {
         DLog.i(LOG_TAG, "setupViewPager")
-        mEmptyTextView?.visibility = View.GONE
+        if (mImages != null && !mImages!!.isEmpty()) {
+            mEmptyTextView?.visibility = View.GONE
+        }
         mViewPager?.adapter = ImagePagerAdapter(activity!!, mImages)
+        if (mSelectedPosition != 0) {
+            mViewPager?.setCurrentItem(mSelectedPosition, true)
+        }
         mViewPager?.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
 
