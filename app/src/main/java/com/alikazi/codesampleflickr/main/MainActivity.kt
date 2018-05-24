@@ -2,6 +2,7 @@ package com.alikazi.codesampleflickr.main
 
 import android.app.FragmentTransaction
 import android.content.Context
+import android.graphics.Rect
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -9,9 +10,14 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SnapHelper
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
 import com.alikazi.codesampleflickr.R
+import com.alikazi.codesampleflickr.R.id.main_recycler_view
+import com.alikazi.codesampleflickr.R.id.recycler_view_empty_text_view
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.models.Items
@@ -47,13 +53,6 @@ class MainActivity : AppCompatActivity(),
     private var mLayoutManager: LinearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     private var mRequestsProcessor: RequestsProcessor = RequestsProcessor(this, this)
 
-    private val isNetworkConnected: Boolean
-        get() {
-            val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val networkInfo = connectivityManager.activeNetworkInfo
-            return networkInfo != null && networkInfo.isConnectedOrConnecting
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         DLog.i(LOG_TAG, "onCreate")
@@ -73,8 +72,6 @@ class MainActivity : AppCompatActivity(),
             mPreviouslySelectedPosition = savedInstanceState.getInt(SAVE_INSTANCE_KEY_SCROLL_POSITION)
             handleOrientationChange()
         }
-
-        // TODO REFRESH MENU BUTTON
     }
 
     private fun startAppCenter() {
@@ -85,7 +82,6 @@ class MainActivity : AppCompatActivity(),
 
     private fun initUi() {
         setSupportActionBar(toolbar)
-        main_swipe_refresh_layout.setOnRefreshListener { makeRequest() }
         setupRecyclerView()
         showHideEmptyListMessage(true)
     }
@@ -103,10 +99,23 @@ class MainActivity : AppCompatActivity(),
         })
     }
 
+    private fun resetSomeValuesToDefault(userClickedRefresh: Boolean) {
+        if (userClickedRefresh) {
+            mPreviouslySelectedPosition = 0
+            main_recycler_view.smoothScrollToPosition(0)
+        }
+        instantiateFragment()
+        mDefaultChildCount = 0
+        mRecyclerAdapter.setSelectedPositionFromViewPager(mPreviouslySelectedPosition)
+        mRecyclerAdapter.setListItems(mListItems)
+        showHideEmptyListMessage(false)
+    }
+
     private fun instantiateFragment() {
         val fragment = DetailsFragment().apply {
             arguments = Bundle().apply {
                 putParcelableArrayList(DetailsFragment.INTENT_EXTRA_PAGER_ITEMS, mListItems)
+                putInt(DetailsFragment.INTENT_EXTRA_PREVIOUSLY_SELECTED_POSITION, mPreviouslySelectedPosition)
             }
          }
 
@@ -125,12 +134,7 @@ class MainActivity : AppCompatActivity(),
         // Toolbar should not re-animate on orientation change
         val layoutParams = toolbar.layoutParams
         layoutParams?.height = CustomAnimationUtils.getDefaultActionBarHeightInPixels(this).toInt()
-        instantiateFragment()
-        mDefaultChildCount = 0
-        mRecyclerAdapter.setListItems(mListItems)
-        mRecyclerAdapter.setSelectedPositionFromViewPager(mPreviouslySelectedPosition)
-        main_swipe_refresh_layout.isRefreshing = false
-        showHideEmptyListMessage(false)
+        resetSomeValuesToDefault(false)
     }
 
     override fun onToolbarAnimationEnd() {
@@ -141,31 +145,29 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun makeRequest() {
-        mRequestsProcessor.getProperties()
-        main_swipe_refresh_layout.isRefreshing = true
+        if (checkNetwork()) {
+            mRequestsProcessor.getFeed()
+        } else {
+            showSnackbar()
+        }
         recycler_view_empty_text_view.setText(R.string.feed_empty_list_message)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle?) {
-        super.onSaveInstanceState(outState)
-        DLog.i(LOG_TAG, "onSaveInstanceState")
-        outState?.putParcelableArrayList(SAVE_INSTANCE_KEY_FEED, mListItems)
-        outState?.putInt(SAVE_INSTANCE_KEY_SCROLL_POSITION, mPreviouslySelectedPosition)
     }
 
     override fun responseOk(items: Items) {
         DLog.i(LOG_TAG, "responseOk")
         mListItems = items.images
-        mRecyclerAdapter.setListItems(mListItems)
-        instantiateFragment()
-        main_swipe_refresh_layout.isRefreshing = false
-        showHideEmptyListMessage(false)
+        resetSomeValuesToDefault(true)
     }
 
     override fun responseError(error: VolleyError) {
         DLog.i(LOG_TAG, "responseError: " + error.toString())
         recycler_view_empty_text_view.setText(R.string.feed_empty_list_error_message)
-        val snackbarMessage = when(isNetworkConnected) {
+        showSnackbar()
+        showHideEmptyListMessage(true)
+    }
+
+    private fun showSnackbar() {
+        val snackbarMessage = when(checkNetwork()) {
             true -> getString(R.string.snackbar_feed_load_error)
             false -> getString(R.string.snackbar_network_error_message)
         }
@@ -173,9 +175,6 @@ class MainActivity : AppCompatActivity(),
         Snackbar.make(main_recycler_view, snackbarMessage, Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.refresh, { makeRequest() })
                 .show()
-
-        showHideEmptyListMessage(true)
-        main_swipe_refresh_layout.isRefreshing = false
     }
 
     private fun showHideEmptyListMessage(showMessage: Boolean) {
@@ -187,7 +186,6 @@ class MainActivity : AppCompatActivity(),
         if (mDefaultChildCount == 0) {
             getDefaultNumberOfVisibleViews()
         }
-
         /**
          * If diff < 0 then user scrolled to the right (position increased)
          * If diff > 0 then user scrolled to the left (position decreased)
@@ -226,7 +224,67 @@ class MainActivity : AppCompatActivity(),
     private fun getDefaultNumberOfVisibleViews() {
         mDefaultChildCount = mLayoutManager.findLastCompletelyVisibleItemPosition() -
                 mLayoutManager.findFirstCompletelyVisibleItemPosition()
-        DLog.d(LOG_TAG, "mDefaultChildCount + $mDefaultChildCount")
+
+        for (index in 0 until mLayoutManager.childCount) {
+            // Find last visible child that is not null
+            var lastChild: View? = mLayoutManager.getChildAt(index)
+            if (index == mDefaultChildCount + 1 && lastChild != null) {
+                // Get the visible portion of the last visible child
+                val rect = Rect()
+                lastChild.getGlobalVisibleRect(rect)
+
+                // If last child is more than 50% visible then it is a good idea to scroll 1 child extra
+                // to make sure that the left-est child in recycler view is the highlighted one
+                val shouldIncludeLastChild =
+                        rect.width() >= mLayoutManager.getDecoratedMeasuredWidth(lastChild) / 2
+                if (shouldIncludeLastChild) {
+                    DLog.i(LOG_TAG, "shouldIncludeLastChild: $shouldIncludeLastChild")
+                    ++mDefaultChildCount
+                }
+            }
+        }
+
+        DLog.w(LOG_TAG, "mDefaultChildCount: $mDefaultChildCount")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        DLog.i(LOG_TAG, "onSaveInstanceState")
+        outState?.putParcelableArrayList(SAVE_INSTANCE_KEY_FEED, mListItems)
+        outState?.putInt(SAVE_INSTANCE_KEY_SCROLL_POSITION, mPreviouslySelectedPosition)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val menuInflater = MenuInflater(this)
+        menuInflater.inflate(R.menu.menu_refresh, menu)
+        val max: Int = when(menu?.size()) {
+            null -> 0
+            else -> menu.size() - 1
+        }
+        // Android bug: Menu action does not show even though
+        // set to showAsAction="always" in xml
+        for (index: Int in 0..max) {
+            val menuItem = menu?.getItem(index)
+            if (menuItem != null && menuItem.itemId == R.id.action_refresh) {
+                menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+            }
+        }
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean = when(item?.itemId){
+        R.id.action_refresh -> {
+            makeRequest()
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun checkNetwork(): Boolean {
+        DLog.i(LOG_TAG, "checkNetwork")
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isAvailable && networkInfo.isConnectedOrConnecting
     }
 
     override fun onStop() {

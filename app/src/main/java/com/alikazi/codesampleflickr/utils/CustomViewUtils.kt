@@ -67,11 +67,11 @@ class CustomViewUtils {
          */
         private fun calculateScrollByXForOneChild(recyclerView: RecyclerView) : Int {
             val measuredWidth = recyclerView.getChildAt(0).measuredWidth
-            return CustomViewUtils.getComplexUnitPx(recyclerView.context, measuredWidth.toFloat()).toInt()
+            return CustomViewUtils.getComplexUnitDip(recyclerView.context, measuredWidth.toFloat()).toInt()
         }
 
-        fun getComplexUnitPx(context: Context, measuredWidth: Float) : Float {
-            return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, measuredWidth, context.resources.displayMetrics)
+        fun getComplexUnitDip(context: Context, measuredWidth: Float) : Float {
+            return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, measuredWidth, context.resources.displayMetrics)
         }
     }
 }
