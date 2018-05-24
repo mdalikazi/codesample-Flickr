@@ -16,8 +16,6 @@ import android.view.MenuItem
 import android.view.View
 import com.alikazi.codesampleflickr.BuildConfig
 import com.alikazi.codesampleflickr.R
-import com.alikazi.codesampleflickr.R.id.main_recycler_view
-import com.alikazi.codesampleflickr.R.id.recycler_view_empty_text_view
 import com.alikazi.codesampleflickr.constants.AppConstants
 import com.alikazi.codesampleflickr.models.ImageItem
 import com.alikazi.codesampleflickr.models.Items
@@ -227,7 +225,7 @@ class MainActivity : AppCompatActivity(),
 
         for (index in 0 until mLayoutManager.childCount) {
             // Find last visible child that is not null
-            var lastChild: View? = mLayoutManager.getChildAt(index)
+            val lastChild: View? = mLayoutManager.getChildAt(index)
             if (index == mDefaultChildCount + 1 && lastChild != null) {
                 // Get the visible portion of the last visible child
                 val rect = Rect()
