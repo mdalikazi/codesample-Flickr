@@ -19,29 +19,20 @@
 * Tablet landscape mode is supported with master-detail workflow.
     
 * Challenges
-    - The biggest challenge was to ensure that the highlighted image is always the leftmost image.  
+    - The biggest challenge was to ensure that the highlighted image in RecyclerView is always the leftmost image.  
       
-        First, I added a custom [SnapHelper](https://developer.android.com/reference/android/support/v7/widget/SnapHelper "SnapHelper in Android Docs")
-        which by default ensures that views snap to center of RecyclerView, but  
+        Wrote a custom [SnapHelper](https://developer.android.com/reference/android/support/v7/widget/SnapHelper "SnapHelper in Android Docs")
+        which by default snaps views to the center, but 
         [my LeftSnapHelper](/app/src/main/java/com/alikazi/codesampleflickr/utils/LeftSnapHelper.kt) 
         ensures that the leftmost child is always shown in full.  
 
-        Then I tried few different ways: Get the last visible child with `LayoutManager.getChildAt()`, calculate its width and then scroll RecyclerView using `scrollByX()`
-        but it was not always reliable because RecyclerView does not always hold same number of children offscreen if the user scrolls RecyclerView itself.  
-
-        Finally, I settled with a simple `smoothScrollToPosition` and calculated the position with some math which you can see in
+        Finally, some math with `smoothScrollToPosition` in 
         [MainActivity.getDefaultNumberOfVisibleViews()](/app/src/main/java/com/alikazi/codesampleflickr/main/MainActivity.kt)
+	and [MainActivity.onPageSelected()](/app/src/main/java/com/alikazi/codesampleflickr/main/MainActivity.kt) handle all
+	possible user interactions.
         
-    - The second challenge was to survive orientation changes gracefully and restore positions
-        I had already used a fragment for the `ViewPager` to support master-detail workflow but it was fairly easy by saving and restoring instances.
-
-* With more time, I would add 
-    - Unit and UI tests
-    - MVP or MVVM pattern
-    - API such as SightEngine to filter out explicit images or mark them in the list.
-    
-* Git flow
-	- I have used standard git flow method (pull requests, rebasing etc.).
+    - The second challenge was to survive orientation changes and restore selected positions
+        This was fairly easy by saving and restoring instances due to the master-detail workflow approach.
 
 ### Who do I talk to? ###
 
