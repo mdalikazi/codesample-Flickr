@@ -1,11 +1,11 @@
-package com.alikazi.codesampleflickr.network
+package com.alikazi.codesample_flickr.network
 
 import android.content.Context
 import android.net.Uri
-import com.alikazi.codesampleflickr.constants.AppConstants
-import com.alikazi.codesampleflickr.constants.NetworkConstants
-import com.alikazi.codesampleflickr.models.Items
-import com.alikazi.codesampleflickr.utils.DLog
+import com.alikazi.codesample_flickr.constants.AppConstants
+import com.alikazi.codesample_flickr.constants.NetworkConstants
+import com.alikazi.codesample_flickr.models.Items
+import com.alikazi.codesample_flickr.utils.DLog
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.VolleyError

@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr.main
+package com.alikazi.codesample_flickr.main
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -7,10 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.alikazi.codesampleflickr.R
-import com.alikazi.codesampleflickr.constants.AppConstants
-import com.alikazi.codesampleflickr.models.ImageItem
-import com.alikazi.codesampleflickr.utils.DLog
+import com.alikazi.codesample_flickr.R
+import com.alikazi.codesample_flickr.constants.AppConstants
+import com.alikazi.codesample_flickr.models.ImageItem
+import com.alikazi.codesample_flickr.utils.DLog
 import kotlinx.android.synthetic.main.content_detail.view.*
 
 /**

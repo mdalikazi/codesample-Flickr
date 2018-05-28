@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr.constants
+package com.alikazi.codesample_flickr.constants
 
 /**
  * Created by kazi_ on 22-May-18.

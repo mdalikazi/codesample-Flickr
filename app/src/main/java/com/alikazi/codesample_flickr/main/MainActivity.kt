@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr.main
+package com.alikazi.codesample_flickr.main
 
 import android.app.FragmentTransaction
 import android.content.Context
@@ -14,16 +14,16 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import com.alikazi.codesampleflickr.BuildConfig
-import com.alikazi.codesampleflickr.R
-import com.alikazi.codesampleflickr.constants.AppConstants
-import com.alikazi.codesampleflickr.models.ImageItem
-import com.alikazi.codesampleflickr.models.Items
-import com.alikazi.codesampleflickr.network.RequestQueueHelper
-import com.alikazi.codesampleflickr.network.RequestsProcessor
-import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
-import com.alikazi.codesampleflickr.utils.DLog
-import com.alikazi.codesampleflickr.utils.LeftSnapHelper
+import com.alikazi.codesample_flickr.BuildConfig
+import com.alikazi.codesample_flickr.R
+import com.alikazi.codesample_flickr.constants.AppConstants
+import com.alikazi.codesample_flickr.models.ImageItem
+import com.alikazi.codesample_flickr.models.Items
+import com.alikazi.codesample_flickr.network.RequestQueueHelper
+import com.alikazi.codesample_flickr.network.RequestsProcessor
+import com.alikazi.codesample_flickr.utils.CustomAnimationUtils
+import com.alikazi.codesample_flickr.utils.DLog
+import com.alikazi.codesample_flickr.utils.LeftSnapHelper
 import com.android.volley.VolleyError
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.crashes.Crashes

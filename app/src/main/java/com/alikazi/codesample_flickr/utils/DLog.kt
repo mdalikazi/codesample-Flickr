@@ -1,7 +1,7 @@
-package com.alikazi.codesampleflickr.utils
+package com.alikazi.codesample_flickr.utils
 
 import android.util.Log
-import com.alikazi.codesampleflickr.BuildConfig
+import com.alikazi.codesample_flickr.BuildConfig
 
 
 /**

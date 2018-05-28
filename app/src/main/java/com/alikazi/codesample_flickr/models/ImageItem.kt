@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr.models
+package com.alikazi.codesample_flickr.models
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName

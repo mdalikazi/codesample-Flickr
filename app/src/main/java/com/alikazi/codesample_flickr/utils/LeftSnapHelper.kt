@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr.utils
+package com.alikazi.codesample_flickr.utils
 
 import android.support.annotation.Nullable
 import android.support.v7.widget.LinearLayoutManager
