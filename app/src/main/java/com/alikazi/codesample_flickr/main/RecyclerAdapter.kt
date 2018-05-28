@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr.main
+package com.alikazi.codesample_flickr.main
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
@@ -7,12 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
-import com.alikazi.codesampleflickr.R
-import com.alikazi.codesampleflickr.constants.AppConstants
-import com.alikazi.codesampleflickr.models.ImageItem
-import com.alikazi.codesampleflickr.utils.CustomAnimationUtils
-import com.alikazi.codesampleflickr.utils.CustomViewUtils
-import com.alikazi.codesampleflickr.utils.DLog
+import com.alikazi.codesample_flickr.R
+import com.alikazi.codesample_flickr.constants.AppConstants
+import com.alikazi.codesample_flickr.models.ImageItem
+import com.alikazi.codesample_flickr.utils.CustomAnimationUtils
+import com.alikazi.codesample_flickr.utils.CustomViewUtils
+import com.alikazi.codesample_flickr.utils.DLog
 
 /**
  * Created by kazi_ on 22-May-18.

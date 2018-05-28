@@ -1,7 +1,7 @@
-package com.alikazi.codesampleflickr.network
+package com.alikazi.codesample_flickr.network
 
 import android.content.Context
-import com.alikazi.codesampleflickr.constants.AppConstants
+import com.alikazi.codesample_flickr.constants.AppConstants
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley

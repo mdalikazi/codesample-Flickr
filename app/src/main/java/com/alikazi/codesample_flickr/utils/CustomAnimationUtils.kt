@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr.utils
+package com.alikazi.codesample_flickr.utils
 
 import android.animation.Animator
 import android.animation.ValueAnimator

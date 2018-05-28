@@ -1,14 +1,14 @@
-package com.alikazi.codesampleflickr.main
+package com.alikazi.codesample_flickr.main
 
 import android.content.Context
 import android.support.v4.view.PagerAdapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.alikazi.codesampleflickr.R
-import com.alikazi.codesampleflickr.constants.AppConstants
-import com.alikazi.codesampleflickr.models.ImageItem
-import com.alikazi.codesampleflickr.utils.CustomViewUtils
+import com.alikazi.codesample_flickr.R
+import com.alikazi.codesample_flickr.constants.AppConstants
+import com.alikazi.codesample_flickr.models.ImageItem
+import com.alikazi.codesample_flickr.utils.CustomViewUtils
 import kotlinx.android.synthetic.main.item_view_pager.view.*
 
 class ImagePagerAdapter(context: Context, images: ArrayList<ImageItem>?) : PagerAdapter() {

@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr
+package com.alikazi.codesample_flickr
 
 import org.junit.Test
 

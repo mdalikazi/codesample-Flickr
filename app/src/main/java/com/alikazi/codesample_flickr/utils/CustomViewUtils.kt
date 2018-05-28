@@ -1,4 +1,4 @@
-package com.alikazi.codesampleflickr.utils
+package com.alikazi.codesample_flickr.utils
 
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -10,7 +10,7 @@ import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
-import com.alikazi.codesampleflickr.R
+import com.alikazi.codesample_flickr.R
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
