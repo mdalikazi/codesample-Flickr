@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity(),
     private var mPreviouslySelectedPosition = 0
     private var mListItems: ArrayList<ImageItem>? = ArrayList()
     private var mRecyclerAdapter: RecyclerAdapter = RecyclerAdapter(this)
-    private var mLayoutManager: LinearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+    private var mLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
     private var mRequestsProcessor: RequestsProcessor = RequestsProcessor(this, this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,6 +101,9 @@ class MainActivity : AppCompatActivity(),
         if (userClickedRefresh) {
             mPreviouslySelectedPosition = 0
             main_recycler_view.smoothScrollToPosition(0)
+        }
+        if (tablet_layout != null) {
+            mLayoutManager.orientation = LinearLayoutManager.VERTICAL
         }
         instantiateFragment()
         mDefaultChildCount = 0
